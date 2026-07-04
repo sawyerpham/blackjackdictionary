@@ -6,11 +6,11 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 export function NavBar() {
   return (
     <header className="bg-[var(--bg-second)] shadow-md">
-      <nav className="container mx-auto flex items-center justify-between px-4 py-4">
-        <NavLink to="/" className="text-2xl font-bold text-emerald-500">
+      <nav className="container mx-auto flex flex-col items-center gap-3 px-4 py-4 sm:flex-row sm:justify-between">
+        <NavLink to="/" className="text-xl font-bold text-emerald-500 sm:text-2xl">
           Blackjack Dictionary
         </NavLink>
-        <div className="flex gap-6">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 sm:gap-6">
           <NavLink to="/" end className={linkClass}>
             Home
           </NavLink>
