@@ -27,7 +27,8 @@ function App() {
   useAppliedTheme();
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--bg-main)] text-[var(--text-primary)]">
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[var(--bg-main)] text-[var(--text-primary)]">
+
       <NavBar />
       <Routes>
         <Route path="/" element={<HomePage />} />
