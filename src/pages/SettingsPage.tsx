@@ -337,6 +337,51 @@ export function SettingsPage() {
                   />
                 </div>
               </div>
+
+              {DIVIDER}
+
+              <SubSection title="Realistic Mode Timing">
+                <div className="grid grid-cols-1 gap-20 px-8 text-center md:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-[var(--text-primary)]">
+                      Hand Clearing Time
+                    </label>
+                    <div className="flex flex-col items-center">
+                      <input
+                        type="range"
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={draft.realisticHandClearSeconds}
+                        onChange={(e) => update('realisticHandClearSeconds', Number(e.target.value))}
+                        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-600"
+                      />
+                      <span className="mt-2 w-10 text-center text-[var(--text-primary)]">
+                        {draft.realisticHandClearSeconds}s
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-[var(--text-primary)]">
+                      Decision Timer
+                    </label>
+                    <div className="flex flex-col items-center">
+                      <input
+                        type="range"
+                        min={1}
+                        max={9}
+                        step={1}
+                        value={draft.realisticDecisionSeconds}
+                        onChange={(e) => update('realisticDecisionSeconds', Number(e.target.value))}
+                        className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-600"
+                      />
+                      <span className="mt-2 w-10 text-center text-[var(--text-primary)]">
+                        {draft.realisticDecisionSeconds}s
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </SubSection>
             </SectionCard>
 
             <SectionCard title="Preset Configurations">

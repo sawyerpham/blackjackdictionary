@@ -110,6 +110,10 @@ export interface GameSettings {
   allowLateSurrender: boolean;
   countingSystem: CountingSystemKey;
   theme: ThemeKey;
+  /** Realistic mode: seconds the table is "cleared" before the next hand auto-deals (1–5). */
+  realisticHandClearSeconds: number;
+  /** Realistic mode: decision countdown length in seconds; expiring carries no penalty. */
+  realisticDecisionSeconds: number;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -127,6 +131,8 @@ export const DEFAULT_SETTINGS: GameSettings = {
   allowLateSurrender: true,
   countingSystem: DEFAULT_COUNTING_SYSTEM,
   theme: 'default',
+  realisticHandClearSeconds: 2,
+  realisticDecisionSeconds: 8,
 };
 
 export interface Preset {
