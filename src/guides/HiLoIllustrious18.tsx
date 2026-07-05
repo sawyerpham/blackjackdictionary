@@ -287,7 +287,7 @@ function Content() {
 export const hiLoIllustrious18Guide: Guide = {
   slug: 'hi-lo-illustrious-18',
   title: 'Hi-Lo & the Illustrious 18',
-  description: 'Counting the shoe, betting the count, and the deviations that matter',
+  description: 'A balanced level-1 count with valuable deviations',
   sections: [
     { id: 'what-counting-does', title: 'What Counting Does' },
     { id: 'hi-lo-count', title: 'The Hi-Lo Count' },
