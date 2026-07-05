@@ -32,7 +32,10 @@ function Content() {
 
       <GuideH2 id="tags">The Card Tags</GuideH2>
       <TagValuesTable rows={ZEN_TAGS} />
-      <GuideP>The tags net to zero over a full deck.</GuideP>
+      <GuideP>
+        The tags net to zero over a full deck, so the standard running-to-true-count conversion
+        from the overview applies unchanged, and a correctly counted deck returns to zero.
+      </GuideP>
 
       <GuideH2 id="why-zen">Why Zen</GuideH2>
       <GuideP>
@@ -42,36 +45,18 @@ function Content() {
         is the level-2 system with the least overhead.
       </GuideP>
 
-      <GuideH2 id="running-true-count">Running and True Count</GuideH2>
-      <GuideP>
-        Zen is balanced and uses the standard approach from the overview. Start at zero, add each
-        tag, then divide the running count by decks remaining to get the true count. Bet and
-        deviate off the true count.
-      </GuideP>
-
-      <GuideH2 id="deviations">Deviations</GuideH2>
-      <GuideP>
-        The Zen Count uses index plays specific to the system, supplied with its strategy tables.
-        Insurance is the most valuable deviation.
-      </GuideP>
-
-      <GuideH2 id="accuracy-check">Accuracy Check</GuideH2>
-      <GuideP>A full deck counted correctly returns to zero.</GuideP>
     </>
   );
 }
 
 export const zenCountGuide: Guide = {
   slug: 'zen',
-  title: 'The Zen Count',
+  title: 'Zen Count',
   description: 'The practical level-2 count: it tags the ace directly, so no side count needed',
   sections: [
     { id: 'profile', title: 'Profile' },
     { id: 'tags', title: 'The Card Tags' },
     { id: 'why-zen', title: 'Why Zen' },
-    { id: 'running-true-count', title: 'Running and True Count' },
-    { id: 'deviations', title: 'Deviations' },
-    { id: 'accuracy-check', title: 'Accuracy Check' },
   ],
   Content,
 };

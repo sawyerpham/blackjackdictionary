@@ -41,7 +41,10 @@ function Content() {
 
       <GuideH2 id="tags">The Card Tags</GuideH2>
       <TagValuesTable rows={HALVES_TAGS} />
-      <GuideP>The tags net to zero over a full deck.</GuideP>
+      <GuideP>
+        The tags net to zero over a full deck, so the standard running-to-true-count conversion
+        from the overview applies — with one extra step if you double the tags, described below.
+      </GuideP>
 
       <GuideH2 id="doubling-fix">The Fractions and the Doubling Fix</GuideH2>
       <GuideP>
@@ -54,14 +57,6 @@ function Content() {
         must undo the doubling when you convert. Either halve the running count before dividing, or
         divide by twice the decks remaining. Either way, one extra halving step is added to the
         conversion.
-      </GuideP>
-
-      <GuideH2 id="running-true-count">Running and True Count</GuideH2>
-      <GuideP>
-        Wong Halves is balanced and uses the standard approach from the overview. Start at zero,
-        add each tag, then divide by decks remaining for the true count. If you are using the
-        doubled tags, remember to remove the doubling at conversion. Bet and deviate off the true
-        count.
       </GuideP>
 
       <GuideH2 id="reality-check">Reality Check</GuideH2>
@@ -83,13 +78,12 @@ function Content() {
 
 export const wongHalvesGuide: Guide = {
   slug: 'wong-halves',
-  title: 'The Wong Halves System',
+  title: 'Wong Halves System',
   description: 'The highest betting accuracy of any practical count — if you can run the fractions',
   sections: [
     { id: 'profile', title: 'Profile' },
     { id: 'tags', title: 'The Card Tags' },
     { id: 'doubling-fix', title: 'The Fractions and the Doubling Fix' },
-    { id: 'running-true-count', title: 'Running and True Count' },
     { id: 'reality-check', title: 'Reality Check' },
     { id: 'accuracy-check', title: 'Accuracy Check' },
   ],

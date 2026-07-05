@@ -125,8 +125,7 @@ function Content() {
         convenience.
       </GuideP>
 
-      <GuideH2 id="true-count">The True Count</GuideH2>
-      <GuideP>This step applies to balanced systems only.</GuideP>
+      <GuideH2 id="true-count">The True Count (balanced systems only)</GuideH2>
       <GuideP>
         The running count alone is ambiguous, because the same number means very different things
         depending on how many cards remain. A count of +6 with six decks left is weak; the same +6

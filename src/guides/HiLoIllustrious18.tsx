@@ -1,5 +1,5 @@
 import type { Guide } from './registry';
-import { GuideFormula, GuideH2, GuideH3, GuideNote, GuideOl, GuideP, TagValuesTable } from './ui';
+import { GuideH2, GuideH3, GuideNote, GuideP, TagValuesTable } from './ui';
 
 type Action = 'Stand' | 'Double' | 'Split' | 'Insurance' | 'Surrender';
 
@@ -140,22 +140,10 @@ function Content() {
   return (
     <>
       <GuideP>
-        Hi-Lo is the most widely used card counting system. This guide covers how it works, how to
-        bet with it, and the Illustrious 18 deviations that adjust play at high and low counts. It
-        assumes you already know basic strategy.
-      </GuideP>
-
-      <GuideH2 id="what-counting-does">What Counting Does</GuideH2>
-      <GuideP>
-        Hi-Lo tracks whether the cards left in the shoe favor the player or the dealer. A shoe rich
-        in tens and aces favors the player: more blackjacks, more dealer busts, better doubles. A
-        shoe rich in low cards favors the dealer.
-      </GuideP>
-      <GuideP>
-        Counting turns the roughly 0.5% house edge into a small player edge, usually in the range
-        of 0.5% to 1.5% when done well. It works over many hours and requires a large bankroll to
-        survive normal swings. It is legal, but casinos are private property and can bar players
-        they suspect of counting.
+        Hi-Lo is the most widely used card counting system: a balanced, level-1 count that is easy
+        to run and gives up little accuracy for its simplicity. This guide covers what is specific
+        to Hi-Lo and its deviations, and assumes basic strategy and the shared card counting
+        overview.
       </GuideP>
 
       <GuideH2 id="hi-lo-count">The Hi-Lo Count</GuideH2>
@@ -168,73 +156,38 @@ function Content() {
         built-in accuracy check.
       </GuideP>
 
-      <GuideH2 id="running-count">Running Count</GuideH2>
-      <GuideP>
-        Start at zero when the shoe is shuffled. Add each card's value as it appears, including
-        your cards, other players' cards, and the dealer's.
-      </GuideP>
+      <GuideH2 id="running-count">Counting in Practice</GuideH2>
+      <GuideP>Start at zero when the shoe is shuffled and keep the tally as cards appear.</GuideP>
       <GuideH3>Example</GuideH3>
       <GuideP>
-        The first ten cards that appear on a table are 3, 5, K, 7, Q, A, 8, 5, 4, 2. The running count is +1, +1, -1, 0,
-        -1, -1, 0, +1, +1, +1, for a total of +2.
+        The first ten cards that appear on a table are 3, 5, K, 7, Q, A, 8, 5, 4, 2. The running
+        count is +1, +1, -1, 0, -1, -1, 0, +1, +1, +1, for a total of +2.
       </GuideP>
-
-      <GuideH2 id="true-count">True Count</GuideH2>
       <GuideP>
-        The running count alone is not enough to bet on, because the same number means different
-        things depending on how many cards remain. The true count corrects for this.
-      </GuideP>
-      <GuideFormula>True count = running count / decks remaining</GuideFormula>
-      <GuideP>
-        Estimate decks remaining by eye, using the discard tray. One deck is about one inch of
-        stacked cards.
+        Hi-Lo is balanced, so convert to a true count as the overview describes before betting or
+        deviating.
       </GuideP>
       <GuideH3>Example</GuideH3>
       <GuideP>
         The running count is +7 with about 4 decks left. True count is 7 / 4, or roughly +2. Round
         to keep it simple.
       </GuideP>
-      <GuideNote>
-        The true count, not the running count, drives every betting and playing decision.
-      </GuideNote>
 
       <GuideH2 id="betting">Betting the Count</GuideH2>
       <GuideP>
-        Bet more as the true count rises, and drop to the minimum when it is low or negative. This
-        bet spread is where most of the counting edge comes from.
-      </GuideP>
-      <GuideP>
-        The larger the spread, the larger the edge and the larger the swings. A wider spread also
-        draws more attention. In a six-deck game, a 1-to-15 spread is about as aggressive as is
-        practical.
-      </GuideP>
-      <GuideP>
+        
+        In a six-deck game, a 1-to-15 spread is about as aggressive as is practical for Hi-Lo.
         Approximate player advantage for a six-deck S17 game with the Illustrious 18 and Fab 4 in
         use:
       </GuideP>
       <BetSpreadTable />
-      <GuideP>
-        Deeper penetration and a wider spread both raise the edge. To reduce heat, raise the bet
-        only after a win and lower it only after a loss.
-      </GuideP>
-
-      <GuideH2 id="deviations">Playing Deviations</GuideH2>
-      <GuideP>
-        Basic strategy is calculated for a neutral count. At high or low counts, a small number of
-        plays change. A deviation is a departure from the chart triggered when the true count
-        is at or above a set number, called the index.
-      </GuideP>
-      <GuideP>
-        Deviations are secondary to betting. Betting the count correctly captures most of the edge.
-        Deviations add roughly 0.1% to 0.2% on top. Learn them only after your count and bet spread
-        are solid.
-      </GuideP>
 
       <GuideH2 id="illustrious-18">The Illustrious 18</GuideH2>
       <GuideP>
-        These are the eighteen most valuable deviations, ranked by value, calculated for Hi-Lo on a
-        multi-deck S17 game. They capture roughly 80 to 85 percent of the total gain available from
-        all deviations.
+        These are the eighteen most valuable deviations for Hi-Lo, ranked by value, calculated for
+        a multi-deck S17 game. They capture roughly 80 to 85 percent of the total gain available
+        from all deviations, adding about 0.1% to 0.2% on top of betting. Learn them from the top
+        of the list down: insurance and 16 vs 10 first.
       </GuideP>
       <GuideNote>
         Reading rule: stand, double, or split if the true count is equal to or greater than the
@@ -269,36 +222,21 @@ function Content() {
         never break a 20. Some counters drop those two plays and use the remaining set, known as
         the Sweet 16, to reduce heat.
       </GuideP>
-
-      <GuideH2 id="learning-order">Learning Order</GuideH2>
-      <GuideOl>
-        <li>Get the running count automatic. Count down a full deck to zero in under 30 seconds.</li>
-        <li>Add true-count conversion. Divide the running count by decks remaining.</li>
-        <li>Add the bet spread. This is where the edge lives.</li>
-        <li>
-          Add deviations last, starting from the top of the list. Insurance and 16 vs 10 come
-          first, then work down.
-        </li>
-      </GuideOl>
     </>
   );
 }
 
 export const hiLoIllustrious18Guide: Guide = {
   slug: 'hi-lo-illustrious-18',
-  title: 'Hi-Lo & the Illustrious 18',
+  title: 'Hi-Lo System',
   description: 'A balanced level-1 count with valuable deviations',
   sections: [
-    { id: 'what-counting-does', title: 'What Counting Does' },
     { id: 'hi-lo-count', title: 'The Hi-Lo Count' },
-    { id: 'running-count', title: 'Running Count' },
-    { id: 'true-count', title: 'True Count' },
+    { id: 'running-count', title: 'Counting in Practice' },
     { id: 'betting', title: 'Betting the Count' },
-    { id: 'deviations', title: 'Playing Deviations' },
     { id: 'illustrious-18', title: 'The Illustrious 18' },
     { id: 'fab-4', title: 'The Fab 4 Surrenders' },
     { id: 'notes', title: 'Notes and Cautions' },
-    { id: 'learning-order', title: 'Learning Order' },
   ],
   Content,
 };

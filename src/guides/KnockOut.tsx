@@ -126,7 +126,7 @@ function Content() {
 
 export const knockOutGuide: Guide = {
   slug: 'ko',
-  title: 'The Knock-Out (KO) System',
+  title: 'Knock-Out System',
   description: 'A level-1 unbalanced count that trades a little accuracy for no true-count math',
   sections: [
     { id: 'why-ko-exists', title: 'Why KO Exists' },

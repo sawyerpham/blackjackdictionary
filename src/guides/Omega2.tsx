@@ -32,15 +32,9 @@ function Content() {
       <GuideH2 id="tags">The Card Tags</GuideH2>
       <TagValuesTable rows={OMEGA_2_TAGS} />
       <GuideP>
-        The tags net to zero over a full deck. Note the 9 is counted as -1, a distinction most
+        The tags net to zero over a full deck, so the standard running-to-true-count conversion
+        from the overview applies unchanged. Note the 9 is counted as -1, a distinction most
         level-1 systems do not make. The ace is neutral, handled by the side count below.
-      </GuideP>
-
-      <GuideH2 id="running-true-count">Running and True Count</GuideH2>
-      <GuideP>
-        Omega II is balanced and uses the standard approach from the overview. Start at zero, add
-        each tag, then divide the running count by decks remaining to get the true count. Bet and
-        deviate off the true count.
       </GuideP>
 
       <GuideH2 id="ace-side-count">The Ace Side Count</GuideH2>
@@ -60,12 +54,6 @@ function Content() {
         willing to run a side count, Omega II is the more granular of the two.
       </GuideP>
 
-      <GuideH2 id="deviations">Deviations</GuideH2>
-      <GuideP>
-        Omega II uses index plays specific to the system, supplied with its strategy tables.
-        Insurance is the most valuable deviation.
-      </GuideP>
-
       <GuideH2 id="accuracy-check">Accuracy Check</GuideH2>
       <GuideP>
         A full deck counted correctly returns to zero. The ace side count is separate and does not
@@ -77,15 +65,13 @@ function Content() {
 
 export const omega2Guide: Guide = {
   slug: 'omega-2',
-  title: 'The Omega II System',
+  title: 'Omega II System',
   description: 'A precise level-2 count that tags the 9 and pairs with an ace side count',
   sections: [
     { id: 'profile', title: 'Profile' },
     { id: 'tags', title: 'The Card Tags' },
-    { id: 'running-true-count', title: 'Running and True Count' },
     { id: 'ace-side-count', title: 'The Ace Side Count' },
     { id: 'omega-vs-zen', title: 'Omega II vs Zen' },
-    { id: 'deviations', title: 'Deviations' },
     { id: 'accuracy-check', title: 'Accuracy Check' },
   ],
   Content,
