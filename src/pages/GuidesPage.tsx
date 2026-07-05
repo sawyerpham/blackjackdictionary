@@ -40,7 +40,7 @@ export function GuidesPage() {
   const sidebarLink = (isActive: boolean) =>
     `block rounded px-3 py-1.5 text-sm transition-colors ${
       isActive
-        ? 'bg-emerald-500/10 font-medium text-emerald-400'
+        ? 'bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] font-medium text-[var(--accent-soft)]'
         : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
     }`;
 
@@ -71,7 +71,7 @@ export function GuidesPage() {
                 to={`/guides/${g.slug}`}
                 className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
                   g.slug === guide.slug
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-[var(--accent-strong)] text-white'
                     : 'bg-[var(--bg-second)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >
@@ -81,7 +81,7 @@ export function GuidesPage() {
           </div>
 
           <article className="rounded-lg bg-[var(--bg-second)] p-8">
-            <h1 className="mb-2 text-3xl font-bold text-emerald-500">{guide.title}</h1>
+            <h1 className="mb-2 text-3xl font-bold text-[var(--accent)]">{guide.title}</h1>
             <p className="mb-8 text-[var(--text-muted)]">{guide.description}</p>
             <guide.Content />
           </article>
@@ -103,7 +103,7 @@ export function GuidesPage() {
                 }}
                 className={`-ml-px block border-l py-1 pl-4 text-sm transition-colors ${
                   activeSection === section.id
-                    ? 'border-emerald-500 font-medium text-emerald-400'
+                    ? 'border-[var(--accent)] font-medium text-[var(--accent-soft)]'
                     : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >

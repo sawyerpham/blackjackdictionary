@@ -7,7 +7,6 @@ import { SimulatorPage } from './pages/SimulatorPage';
 import { ChallengePage } from './pages/ChallengePage';
 import { GuidesPage } from './pages/GuidesPage';
 import { SettingsPage } from './pages/SettingsPage';
-import { AboutPage } from './pages/AboutPage';
 import { THEMES, useSettingsStore } from './state/settingsStore';
 
 function useAppliedTheme() {
@@ -20,6 +19,9 @@ function useAppliedTheme() {
     root.setProperty('--bg-third', theme.bgThird);
     root.setProperty('--text-muted', theme.textMuted);
     root.setProperty('--text-primary', theme.textPrimary);
+    root.setProperty('--accent', theme.accent);
+    root.setProperty('--accent-soft', theme.accentSoft);
+    root.setProperty('--accent-strong', theme.accentStrong);
   }, [themeKey]);
 }
 
@@ -38,7 +40,6 @@ function App() {
         <Route path="/guides" element={<GuidesPage />} />
         <Route path="/guides/:slug" element={<GuidesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/about" element={<AboutPage />} />
       </Routes>
     </div>
   );
