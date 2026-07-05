@@ -3,10 +3,12 @@ import {
   freshShoe,
   rankIndex,
   RANKS,
+  type DoubleDownRestriction,
   type Rank,
   type Rules,
   type Shoe,
 } from '../engine/blackjack-engine';
+import { chartDecision } from './npcStrategy';
 
 export const DEFAULT_BALANCE = 250_000;
 export const BET_STEP = 1_000;
@@ -31,6 +33,14 @@ export interface HandState {
 
 export type Phase = 'betting' | 'player-turn' | 'round-over';
 
+export const MAX_NPCS = 5;
+
+/** One resolved (or not-yet-played) hand at an NPC seat. No money attached. */
+export interface NpcHandState {
+  cards: Rank[];
+  surrendered: boolean;
+}
+
 export interface SimState {
   balance: number;
   defaultBalance: number;
@@ -44,6 +54,9 @@ export interface SimState {
   activeHandIdx: number;
   phase: Phase;
   message: string;
+  npcCount: number;
+  /** One entry per NPC seat; a seat grows extra hands when it splits. */
+  npcs: NpcHandState[][];
 }
 
 export function initialSimState(decks: number, balance: number, defaultBalance: number): SimState {
@@ -60,6 +73,8 @@ export function initialSimState(decks: number, balance: number, defaultBalance: 
     activeHandIdx: 0,
     phase: 'betting',
     message: '',
+    npcCount: 0,
+    npcs: [],
   };
 }
 
@@ -75,6 +90,7 @@ export type SimAction =
   | { type: 'SET_BALANCE'; value: number }
   | { type: 'RESET_BALANCE' }
   | { type: 'CYCLE_PENETRATION' }
+  | { type: 'CYCLE_NPC_COUNT' }
   | { type: 'FORCE_SHUFFLE' }
   | { type: 'SET_DECKS'; decks: number };
 
@@ -125,6 +141,129 @@ export function visibleShoe(state: SimState): Shoe {
   return shoe;
 }
 
+/** Mirrors the engine's double-down gate without calling into it. */
+function doubleRestrictionAllows(
+  total: number,
+  soft: boolean,
+  restriction: DoubleDownRestriction,
+): boolean {
+  switch (restriction) {
+    case 'any':
+      return true;
+    case 'hard9to11':
+      return !soft && total >= 9 && total <= 11;
+    case 'hard10or11':
+      return !soft && total >= 10 && total <= 11;
+    case 'hard9to11AndSoft':
+      return soft || (total >= 9 && total <= 11);
+  }
+}
+
+function drawDealerTo17(dealerCards: Rank[], shoe: Shoe, rules: Rules): [Rank[], Shoe] {
+  let { total, soft } = handTotal(dealerCards);
+  while ((total < 17 || (total === 17 && soft && rules.hitSoft17)) && cardsLeft(shoe) > 0) {
+    let card: Rank;
+    [card, shoe] = drawCard(shoe);
+    dealerCards = [...dealerCards, card];
+    ({ total, soft } = handTotal(dealerCards));
+  }
+  return [dealerCards, shoe];
+}
+
+/**
+ * Plays one NPC seat strictly by the basic strategy chart (chartDecision) —
+ * hitting, doubling (one card), splitting, and surrendering under the same
+ * table rules the user plays with, but with no bets and no EV logic.
+ */
+function playNpcSeat(dealt: Rank[], dealerUp: Rank, shoe: Shoe, rules: Rules): [NpcHandState[], Shoe] {
+  interface Pending {
+    cards: Rank[];
+    splits: number;
+    splitAces: boolean;
+  }
+  const queue: Pending[] = [{ cards: dealt, splits: 0, splitAces: false }];
+  const finished: NpcHandState[] = [];
+
+  while (queue.length > 0) {
+    const hand = queue.shift()!;
+    if (hand.splitAces && !rules.allowDrawAfterSplitAces) {
+      finished.push({ cards: hand.cards, surrendered: false });
+      continue;
+    }
+
+    let cards = hand.cards;
+    let surrendered = false;
+    let wasSplit = false;
+    for (;;) {
+      const { total, soft } = handTotal(cards);
+      if (total >= 21) break;
+      const isPair = cards.length === 2 && rankIndex(cards[0]) === rankIndex(cards[1]);
+      const canSplit =
+        isPair &&
+        hand.splits < rules.maxSplits &&
+        !(hand.splitAces && !rules.allowResplitAces) &&
+        cardsLeft(shoe) >= 2;
+      const canDouble =
+        cards.length === 2 &&
+        rules.allowDoubleDown &&
+        (hand.splits === 0 || rules.doubleAfterSplit) &&
+        doubleRestrictionAllows(total, soft, rules.doubleDownRestriction);
+      const canSurrender = cards.length === 2 && rules.lateSurrender && hand.splits === 0;
+
+      const action = chartDecision(cards, dealerUp, { total, soft, canDouble, canSplit, canSurrender });
+      if (action === 'stand') break;
+      if (action === 'surrender') {
+        surrendered = true;
+        break;
+      }
+      if (action === 'split') {
+        let c1: Rank, c2: Rank;
+        [c1, shoe] = drawCard(shoe);
+        [c2, shoe] = drawCard(shoe);
+        const aces = rankIndex(cards[0]) === 0;
+        queue.unshift(
+          { cards: [cards[0], c1], splits: hand.splits + 1, splitAces: aces },
+          { cards: [cards[1], c2], splits: hand.splits + 1, splitAces: aces },
+        );
+        wasSplit = true;
+        break;
+      }
+      if (cardsLeft(shoe) === 0) break;
+      let card: Rank;
+      [card, shoe] = drawCard(shoe);
+      cards = [...cards, card];
+      if (action === 'double') break;
+    }
+    if (!wasSplit) finished.push({ cards, surrendered });
+  }
+
+  return [finished, shoe];
+}
+
+function playAllNpcs(
+  npcs: NpcHandState[][],
+  dealerUp: Rank,
+  shoe: Shoe,
+  rules: Rules,
+): [NpcHandState[][], Shoe] {
+  const played: NpcHandState[][] = [];
+  for (const seat of npcs) {
+    let hands: NpcHandState[];
+    [hands, shoe] = playNpcSeat(seat[0].cards, dealerUp, shoe, rules);
+    played.push(hands);
+  }
+  return [played, shoe];
+}
+
+/** True if any NPC hand still needs the dealer to play (not bust/surrender/blackjack). */
+function anyNpcLive(npcs: NpcHandState[][]): boolean {
+  return npcs.some((seat) =>
+    seat.some(
+      (h) => !h.surrendered && !isBlackjackHand(h.cards) && handTotal(h.cards).total <= 21,
+    ),
+  );
+}
+
 function advanceIfNeeded(state: SimState, rules: Rules): SimState {
   const hand = state.hands[state.activeHandIdx];
   if (hand && !hand.done) return state;
@@ -136,16 +275,18 @@ function advanceIfNeeded(state: SimState, rules: Rules): SimState {
 function playDealerAndSettle(state: SimState, rules: Rules): SimState {
   let shoe = state.shoe;
   let dealerCards = state.dealerCards;
-  const anyLive = state.hands.some((h) => h.outcome !== 'lose' && h.outcome !== 'surrender');
+  let npcs = state.npcs;
+
+  // NPC seats (dealt ahead of the user) finish their hands before the dealer plays.
+  if (npcs.length > 0) {
+    [npcs, shoe] = playAllNpcs(npcs, dealerCards[0], shoe, rules);
+  }
+
+  const anyLive =
+    state.hands.some((h) => h.outcome !== 'lose' && h.outcome !== 'surrender') || anyNpcLive(npcs);
 
   if (anyLive) {
-    let { total, soft } = handTotal(dealerCards);
-    while (total < 17 || (total === 17 && soft && rules.hitSoft17)) {
-      const [card, nextShoe] = drawCard(shoe);
-      shoe = nextShoe;
-      dealerCards = [...dealerCards, card];
-      ({ total, soft } = handTotal(dealerCards));
-    }
+    [dealerCards, shoe] = drawDealerTo17(dealerCards, shoe, rules);
   }
 
   const { total: dealerTotal } = handTotal(dealerCards);
@@ -193,6 +334,7 @@ function playDealerAndSettle(state: SimState, rules: Rules): SimState {
     dealerCards,
     dealerHoleHidden: false,
     hands,
+    npcs,
     balance,
     phase: 'round-over',
     message: parts.join(' '),
@@ -208,8 +350,19 @@ export function simulatorReducer(state: SimState, action: SimAction): SimState {
       const fullSize = cardsLeft(freshShoe(state.decks));
       const penetration = PENETRATION_OPTIONS[state.penetrationIdx].value;
       let shoe = state.shoe;
-      if (cardsLeft(shoe) <= fullSize * (1 - penetration) || cardsLeft(shoe) < 15) {
+      // NPC seats burn extra cards, so raise the reshuffle floor with them.
+      const minCards = 15 + state.npcCount * 8;
+      if (cardsLeft(shoe) <= fullSize * (1 - penetration) || cardsLeft(shoe) < minCards) {
         shoe = freshShoe(state.decks);
+      }
+
+      // NPC seats sit ahead of the user and are dealt first.
+      let npcs: NpcHandState[][] = [];
+      for (let i = 0; i < state.npcCount; i++) {
+        let a: Rank, b: Rank;
+        [a, shoe] = drawCard(shoe);
+        [b, shoe] = drawCard(shoe);
+        npcs.push([{ cards: [a, b], surrendered: false }]);
       }
 
       let p1: Rank, p2: Rank, d1: Rank, d2: Rank;
@@ -220,7 +373,7 @@ export function simulatorReducer(state: SimState, action: SimAction): SimState {
 
       const bet = state.currentBet;
       const playerCards: Rank[] = [p1, p2];
-      const dealerCards: Rank[] = [d1, d2];
+      let dealerCards: Rank[] = [d1, d2];
       const playerBJ = isBlackjackHand(playerCards);
       const dealerBJ = isBlackjackHand(dealerCards);
 
@@ -250,6 +403,14 @@ export function simulatorReducer(state: SimState, action: SimAction): SimState {
           hand = { ...hand, outcome: 'lose' };
           message = 'Dealer has blackjack.';
         }
+        // Dealer blackjack ends the round for the whole table; otherwise the
+        // NPCs still play out and the dealer finishes for any live NPC hand.
+        if (!dealerBJ && npcs.length > 0) {
+          [npcs, shoe] = playAllNpcs(npcs, d1, shoe, action.rules);
+          if (anyNpcLive(npcs)) {
+            [dealerCards, shoe] = drawDealerTo17(dealerCards, shoe, action.rules);
+          }
+        }
       } else {
         hand = { ...hand, done: false };
         phase = 'player-turn';
@@ -263,6 +424,7 @@ export function simulatorReducer(state: SimState, action: SimAction): SimState {
         dealerCards,
         dealerHoleHidden,
         hands: [hand],
+        npcs,
         activeHandIdx: 0,
         phase,
         message,
@@ -394,6 +556,10 @@ export function simulatorReducer(state: SimState, action: SimAction): SimState {
     case 'CYCLE_PENETRATION':
       if (state.phase === 'player-turn') return state;
       return { ...state, penetrationIdx: (state.penetrationIdx + 1) % PENETRATION_OPTIONS.length };
+
+    case 'CYCLE_NPC_COUNT':
+      if (state.phase === 'player-turn') return state;
+      return { ...state, npcCount: (state.npcCount + 1) % (MAX_NPCS + 1) };
 
     case 'FORCE_SHUFFLE':
       if (state.phase === 'player-turn') return state;

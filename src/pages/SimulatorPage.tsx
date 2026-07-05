@@ -5,6 +5,7 @@ import {
   evaluate,
   type Action as EngineAction,
   type Evaluation,
+  type Rank,
 } from '../engine/blackjack-engine';
 import { toEngineRules, useSettingsStore } from '../state/settingsStore';
 import {
@@ -16,6 +17,7 @@ import {
   simulatorReducer,
   visibleShoe,
   type HandState,
+  type NpcHandState,
 } from '../state/simulatorLogic';
 import { PlayingCard } from '../components/PlayingCard';
 import { ReferencePanel } from '../components/ReferencePanel';
@@ -184,13 +186,13 @@ function StatTile({
   return (
     <div
       onClick={disabled ? undefined : onClick}
-      className={`rounded-lg bg-[var(--bg-third)] p-4 text-center ${
+      className={`rounded-lg bg-[var(--bg-third)] p-3 text-center ${
         disabled ? 'opacity-40' : onClick ? 'cursor-pointer transition-colors hover:brightness-125' : ''
       }`}
     >
-      <p className="mb-1 text-[var(--text-muted)]">{label}</p>
-      <p className="mb-1 text-xs text-[var(--text-muted)]">{hint}</p>
-      <div className="text-2xl font-bold">{children ?? <span className={valueClassName}>{value}</span>}</div>
+      <p className="mb-0.5 text-xs text-[var(--text-muted)]">{label}</p>
+      <p className="mb-1 text-[11px] text-[var(--text-muted)]">{hint}</p>
+      <div className="text-lg font-bold">{children ?? <span className={valueClassName}>{value}</span>}</div>
     </div>
   );
 }
@@ -216,13 +218,13 @@ function BalanceTile({
     <div
       onClick={editing || disabled ? undefined : handleClick}
       onDoubleClick={editing || disabled ? undefined : handleDoubleClick}
-      className={`rounded-lg bg-[var(--bg-third)] p-4 text-center ${
+      className={`rounded-lg bg-[var(--bg-third)] p-3 text-center ${
         disabled ? 'opacity-40' : editing ? '' : 'cursor-pointer transition-colors hover:brightness-125'
       }`}
     >
-      <p className="mb-1 text-[var(--text-muted)]">Balance</p>
-      <p className="mb-1 text-xs text-[var(--text-muted)]">{editing ? 'Enter to save' : 'Click to reset'}</p>
-      <div className="text-2xl font-bold">
+      <p className="mb-0.5 text-xs text-[var(--text-muted)]">Balance</p>
+      <p className="mb-1 text-[11px] text-[var(--text-muted)]">{editing ? 'Enter to save' : 'Click to reset'}</p>
+      <div className="text-lg font-bold">
         {editing ? (
           <input
             autoFocus
@@ -234,7 +236,7 @@ function BalanceTile({
             onFocus={(e) => e.currentTarget.select()}
             onClick={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
-            className="w-32 rounded bg-[var(--bg-second)] text-center text-indigo-300 outline-none ring-1 ring-[var(--accent)]"
+            className="w-24 rounded bg-[var(--bg-second)] text-center text-indigo-300 outline-none ring-1 ring-[var(--accent)]"
           />
         ) : (
           <span className="text-indigo-300">{formatMoney(balance)}</span>
@@ -259,16 +261,16 @@ function BetTile({
 
   return (
     <div
-      className={`rounded-lg bg-[var(--bg-third)] p-4 text-center ${disabled ? 'opacity-40' : ''}`}
+      className={`rounded-lg bg-[var(--bg-third)] p-3 text-center ${disabled ? 'opacity-40' : ''}`}
     >
-      <p className="mb-1 text-[var(--text-muted)]">Current Bet</p>
-      <p className="mb-1 text-xs text-[var(--text-muted)]">{editing ? 'Enter to save' : 'Use +/-'}</p>
-      <div className="flex items-center justify-center gap-2 text-2xl font-bold">
+      <p className="mb-0.5 text-xs text-[var(--text-muted)]">Current Bet</p>
+      <p className="mb-1 text-[11px] text-[var(--text-muted)]">{editing ? 'Enter to save' : 'Use +/-'}</p>
+      <div className="flex items-center justify-center gap-1.5 text-lg font-bold">
         <button
           type="button"
           disabled={disabled}
           onClick={() => dispatch({ type: 'ADJUST_BET', delta: -BET_STEP })}
-          className="flex h-8 w-8 items-center justify-center rounded bg-gray-600 text-[var(--text-primary)] transition-colors hover:bg-gray-500"
+          className="flex h-6 w-6 items-center justify-center rounded bg-gray-600 text-sm text-[var(--text-primary)] transition-colors hover:bg-gray-500"
         >
           −
         </button>
@@ -281,7 +283,7 @@ function BetTile({
             onKeyDown={handleKeyDown}
             onBlur={cancel}
             onFocus={(e) => e.currentTarget.select()}
-            className="w-24 rounded bg-[var(--bg-second)] text-center text-yellow-500 outline-none ring-1 ring-[var(--accent)]"
+            className="w-20 rounded bg-[var(--bg-second)] text-center text-yellow-500 outline-none ring-1 ring-[var(--accent)]"
           />
         ) : (
           <span
@@ -295,7 +297,7 @@ function BetTile({
           type="button"
           disabled={disabled}
           onClick={() => dispatch({ type: 'ADJUST_BET', delta: BET_STEP })}
-          className="flex h-8 w-8 items-center justify-center rounded bg-gray-600 text-[var(--text-primary)] transition-colors hover:bg-gray-500"
+          className="flex h-6 w-6 items-center justify-center rounded bg-gray-600 text-sm text-[var(--text-primary)] transition-colors hover:bg-gray-500"
         >
           +
         </button>
@@ -369,6 +371,39 @@ function HandView({
         {hand.cards.map((c, i) => (
           <PlayingCard key={i} rank={c} />
         ))}
+      </div>
+    </div>
+  );
+}
+
+function MiniCard({ rank }: { rank: Rank }) {
+  return (
+    <span className="flex h-9 w-7 select-none items-center justify-center rounded bg-gray-100 text-xs font-bold text-gray-900 shadow">
+      {rank}
+    </span>
+  );
+}
+
+function NpcSeatView({ label, hands }: { label: string; hands: NpcHandState[] }) {
+  return (
+    <div className="rounded-lg bg-[var(--bg-third)] p-3">
+      <p className="mb-2 text-xs font-medium text-[var(--text-muted)]">{label}</p>
+      <div className="space-y-2">
+        {hands.map((hand, i) => {
+          const busted = handTotal(hand.cards).total > 21;
+          return (
+            <div key={i} className="flex flex-wrap items-center gap-1">
+              {hand.cards.map((c, j) => (
+                <MiniCard key={j} rank={c} />
+              ))}
+              {(hand.surrendered || busted) && (
+                <span className="ml-1 text-xs font-semibold text-red-400">
+                  {hand.surrendered ? 'Surr' : 'Bust'}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -482,12 +517,17 @@ export function SimulatorPage() {
     dispatch({ type: 'DEAL', rules });
   };
 
-  // Auto-deal the next hand after the clearing pause.
+  // Auto-deal the next hand after the clearing pause. The pause scales
+  // multiplicatively with the hands the dealer has to sweep: the user's
+  // hand(s), every NPC hand, and any splits on either side.
   useEffect(() => {
     if (!realisticMode || state.phase !== 'round-over') return;
     if (state.balance < state.currentBet) return;
-    const deadline = Date.now() + clearSeconds * 1000;
-    setAutoDealRemaining(clearSeconds);
+    const tableHands =
+      state.hands.length + state.npcs.reduce((n, seat) => n + seat.length, 0);
+    const effectiveClear = clearSeconds * Math.max(1, tableHands);
+    const deadline = Date.now() + effectiveClear * 1000;
+    setAutoDealRemaining(effectiveClear);
     const id = window.setInterval(() => {
       const left = (deadline - Date.now()) / 1000;
       if (left > 0) {
@@ -500,7 +540,7 @@ export function SimulatorPage() {
       dispatch({ type: 'DEAL', rules });
     }, 100);
     return () => window.clearInterval(id);
-  }, [realisticMode, state.phase, state.hands, state.balance, state.currentBet, clearSeconds, rules]);
+  }, [realisticMode, state.phase, state.hands, state.npcs, state.balance, state.currentBet, clearSeconds, rules]);
 
   const handleAction = (action: EngineAction) => {
     if (!activeHand) return;
@@ -533,7 +573,7 @@ export function SimulatorPage() {
             </button>
           </div>
 
-          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
+          <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-5">
             <BalanceTile
               balance={state.balance}
               disabled={state.phase === 'player-turn'}
@@ -556,6 +596,14 @@ export function SimulatorPage() {
               onClick={() => dispatch({ type: 'CYCLE_PENETRATION' })}
               disabled={state.phase === 'player-turn'}
             />
+            <StatTile
+              label="NPC Players"
+              hint="Click to cycle"
+              value={String(state.npcCount)}
+              valueClassName="text-purple-400"
+              onClick={() => dispatch({ type: 'CYCLE_NPC_COUNT' })}
+              disabled={state.phase === 'player-turn'}
+            />
           </div>
 
           <div className="mb-8">
@@ -576,6 +624,17 @@ export function SimulatorPage() {
               </div>
             </div>
           </div>
+
+          {state.npcs.length > 0 && (
+            <div className="mb-8">
+              <h3 className="mb-4 text-xl font-semibold text-[var(--accent-soft)]">NPCs</h3>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {state.npcs.map((seat, i) => (
+                  <NpcSeatView key={i} label={`NPC ${i + 1}`} hands={seat} />
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mb-8">
             <h3 className="mb-4 text-xl font-semibold text-[var(--accent-soft)]">Your Hand</h3>
@@ -692,7 +751,10 @@ export function SimulatorPage() {
               <p className="mb-1 text-sm text-[var(--text-muted)]">Hands / Hour</p>
               <p className="text-2xl font-bold text-[var(--text-primary)]">
                 {pacing.handCount > 0
-                  ? Math.round(3600 / (pacing.handTotal / pacing.handCount + clearSeconds))
+                  ? Math.round(
+                      3600 /
+                        (pacing.handTotal / pacing.handCount + clearSeconds * (1 + state.npcCount)),
+                    )
                   : '—'}
               </p>
             </div>

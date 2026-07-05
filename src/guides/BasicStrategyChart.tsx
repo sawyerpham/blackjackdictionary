@@ -1,7 +1,7 @@
 import type { Guide } from './registry';
 import { GuideH2, GuideNote } from './ui';
 
-type ActionCode = 'S' | 'H' | 'D' | 'Ds' | 'P' | 'Rh' | 'Rp';
+export type ActionCode = 'S' | 'H' | 'D' | 'Ds' | 'P' | 'Rh' | 'Rp';
 
 const CODE_STYLE: Record<ActionCode, string> = {
   S: 'bg-emerald-600 text-white',
