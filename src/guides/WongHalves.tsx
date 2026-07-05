@@ -58,17 +58,19 @@ function Content() {
         divide by twice the decks remaining. Either way, one extra halving step is added to the
         conversion.
       </GuideP>
+      <GuideP>
+        A full deck returns to zero on the doubled scale as well.
+      </GuideP>
 
       <GuideH2 id="notes">Notes</GuideH2>
       <GuideP>
-        While Wong Halves has the best betting correlation of any workable system, its lead over
-        methods is small and is erased by any mistakes the harder mental math causes under real
-        conditions. It is worth using only if you can run it cleanly for hours. If the fractions
-        cost you accuracy, a simpler system will earn more.
-
-        A full deck counted correctly returns to zero. If you are using doubled tags, a full deck
-        returns to zero on the doubled scale as well.
-      </GuideP>
+        Wong Halves has the best betting correlation of any workable system, but the lead is small 
+        and is erased by any mistakes.
+        </GuideP>
+        <GuideP>
+        It is worth using only if you can run it cleanly for hours. If the harder mental math
+        costs you accuracy, a simpler system will earn more.
+        </GuideP>
     </>
   );
 }
@@ -76,7 +78,7 @@ function Content() {
 export const wongHalvesGuide: Guide = {
   slug: 'wong-halves',
   title: 'Wong Halves System',
-  description: 'The highest betting accuracy of any practical count — if you can run the fractions',
+  description: 'The highest betting accuracy of any practical count',
   sections: [
     { id: 'profile', title: 'Profile' },
     { id: 'tags', title: 'The Card Tags' },

@@ -120,7 +120,9 @@ function HeatBar({ heat }: { heat: number }) {
   );
 }
 
-/** Local edit-buffer for a stat tile that supports "double-click to type a number". */
+/** Local edit-buffer for a stat tile that supports "double-click to type a number".
+ *  Commits on Enter AND on blur (mobile keyboards confirm via blur, not Enter);
+ *  Escape cancels. */
 function useEditableNumber(onCommit: (value: number) => void) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState('');
@@ -129,21 +131,23 @@ function useEditableNumber(onCommit: (value: number) => void) {
     setText(String(Math.round(current)));
     setEditing(true);
   };
-  const cancel = () => setEditing(false);
+  const commit = () => {
+    const n = Number(text);
+    if (text !== '' && Number.isFinite(n)) onCommit(n);
+    setEditing(false);
+  };
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value.replace(/[^0-9]/g, ''));
   };
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      const n = Number(text);
-      if (text !== '' && Number.isFinite(n)) onCommit(n);
-      setEditing(false);
+      commit();
     } else if (e.key === 'Escape') {
       setEditing(false);
     }
   };
 
-  return { editing, text, startEdit, cancel, handleChange, handleKeyDown };
+  return { editing, text, startEdit, commit, handleChange, handleKeyDown };
 }
 
 /** Distinguishes a single click from the first half of a double-click. */
@@ -206,7 +210,7 @@ function BalanceTile({
   disabled: boolean;
   dispatch: (a: { type: 'SET_BALANCE'; value: number } | { type: 'RESET_BALANCE' }) => void;
 }) {
-  const { editing, text, startEdit, cancel, handleChange, handleKeyDown } = useEditableNumber((n) =>
+  const { editing, text, startEdit, commit, handleChange, handleKeyDown } = useEditableNumber((n) =>
     dispatch({ type: 'SET_BALANCE', value: n }),
   );
   const { handleClick, handleDoubleClick } = useClickVsDoubleClick(
@@ -232,7 +236,7 @@ function BalanceTile({
             value={text}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            onBlur={cancel}
+            onBlur={commit}
             onFocus={(e) => e.currentTarget.select()}
             onClick={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
@@ -255,7 +259,7 @@ function BetTile({
   disabled: boolean;
   dispatch: (a: { type: 'SET_BET'; value: number } | { type: 'ADJUST_BET'; delta: number }) => void;
 }) {
-  const { editing, text, startEdit, cancel, handleChange, handleKeyDown } = useEditableNumber((n) =>
+  const { editing, text, startEdit, commit, handleChange, handleKeyDown } = useEditableNumber((n) =>
     dispatch({ type: 'SET_BET', value: n }),
   );
 
@@ -281,7 +285,7 @@ function BetTile({
             value={text}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            onBlur={cancel}
+            onBlur={commit}
             onFocus={(e) => e.currentTarget.select()}
             className="w-20 rounded bg-[var(--bg-second)] text-center text-yellow-500 outline-none ring-1 ring-[var(--accent)]"
           />
