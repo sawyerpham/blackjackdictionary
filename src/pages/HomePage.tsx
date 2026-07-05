@@ -10,7 +10,7 @@ const FEATURES = [
     tag: 'simulator',
     title: 'Full-rules simulator',
     blurb:
-      'Every rule is adjustable — decks, H17/S17, DAS, resplits, surrender, payouts — or start from the Vegas Strip, Atlantic City, and European presets.',
+      'Every rule is customizable, decks, H17/S17, DAS, resplits, surrender, payouts.',
     to: '/simulator',
   },
   {
@@ -24,7 +24,7 @@ const FEATURES = [
     tag: 'counting',
     title: 'Six counting systems',
     blurb:
-      'Hi-Lo, KO, Hi-Opt 2, Omega 2, Zen, and Wong Halves, with a live running and true count tracking every card dealt at the table.',
+      'Hi-Lo, KO, Hi-Opt 2, Omega 2, Zen, and Wong Halves, with live running/true count tracking every card dealt at the table.',
     to: '/guides',
   },
   {
@@ -45,7 +45,7 @@ const FEATURES = [
     tag: 'guides',
     title: 'Guides + reference panel',
     blurb:
-      'Nine guides from the rules of the game to Wong Halves, plus an in-simulator reference drawer with the strategy chart and count values.',
+      'Nine guides from beginner to blacklisted at every casino, plus quick-access reference panel with the strategy chart and count values.',
     to: '/guides',
   },
 ];
@@ -66,7 +66,7 @@ export function HomePage() {
             <span className="text-[var(--accent)]">Blackjack simulation and strategy</span>
           </h1>
           <p className="mb-6 max-w-2xl text-sm text-[var(--text-muted)] sm:text-lg">
-            A clean, snappy, full-rules simulator, the strategy chart, and a counting guide library from Hi-Lo to Wong
+            A clean, snappy, ad-free, full-rules simulator, the strategy chart, and a counting guide library from Hi-Lo to Wong
             Halves.
           </p>
           <div className="mb-8 flex flex-wrap gap-3">
