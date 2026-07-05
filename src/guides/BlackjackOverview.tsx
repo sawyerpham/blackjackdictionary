@@ -247,7 +247,6 @@ export const blackjackOverviewGuide: Guide = {
     { id: 'flat-betting', title: 'Flat Betting' },
     { id: 'table-selection', title: 'Table Selection' },
     { id: 'bankroll', title: 'Bankroll' },
-    { id: 'next', title: 'Next' },
   ],
   Content,
 };

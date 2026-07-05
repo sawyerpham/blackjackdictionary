@@ -567,14 +567,6 @@ export function SimulatorPage() {
         <section className="rounded-lg bg-[var(--bg-second)] p-8">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <h1 className="text-3xl font-bold text-[var(--accent)]">Blackjack Simulator</h1>
-            <button
-              type="button"
-              onClick={() => setReferenceOpen((o) => !o)}
-              aria-expanded={referenceOpen}
-              className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
-            >
-              {referenceOpen ? 'Close Reference' : 'Reference'}
-            </button>
           </div>
 
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-5">
@@ -608,6 +600,17 @@ export function SimulatorPage() {
               onClick={() => dispatch({ type: 'CYCLE_NPC_COUNT' })}
               disabled={state.phase === 'player-turn'}
             />
+          </div>
+
+          <div className="mb-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setReferenceOpen((o) => !o)}
+              aria-expanded={referenceOpen}
+              className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+            >
+              {referenceOpen ? 'Close Reference' : 'Reference'}
+            </button>
           </div>
 
           <div className="mb-8">
