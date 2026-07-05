@@ -89,8 +89,60 @@ function Content() {
       </GuideP>
 
       <GuideP>
-        Do not count cards at a CSM table. CSM stands for continuous shuffling machine which constantly recycles cards, making counting impossible as you cannot know what cards remain.
+        Do not count cards at a table with a CSM.
       </GuideP>
+
+      <GuideH2 id="terminology">Terminology</GuideH2>
+      <GuideUl>
+        <li>
+          <strong>Tag:</strong> the point value a system assigns to each card rank.
+        </li>
+        <li>
+          <strong>Running count (RC):</strong> the tally of every tag since the shuffle. It is the
+          one number you carry from hand to hand.
+        </li>
+        <li>
+          <strong>True count (TC):</strong> the running count divided by the decks remaining.
+        </li>
+        <li>
+          <strong>Initial running count (IRC):</strong> the number an unbalanced system starts at
+          after a shuffle, so no true-count conversion is needed.
+        </li>
+        <li>
+          <strong>Shoe:</strong> the box the dealer deals from, holding several shuffled decks,
+          typically six or eight.
+        </li>
+        <li>
+          <strong>Penetration:</strong> how deep into the shoe the dealer goes before shuffling.
+          Deeper penetration means more information and more edge.
+        </li>
+        <li>
+          <strong>Unit:</strong> your minimum bet, bet spreads and bankrolls are quoted in units.
+        </li>
+        <li>
+          <strong>Bet spread:</strong> the ratio between your maximum and minimum bet, e.g.
+          1-to-8.
+        </li>
+        <li>
+          <strong>Deviation (index play):</strong> a basic-strategy play that flips at an extreme
+          count, each with its own trigger number.
+        </li>
+        <li>
+          <strong>Side count:</strong> a separate tally of one rank, usually aces, kept alongside
+          the main count by systems that tag the ace as neutral.
+        </li>
+        <li>
+          <strong>Wonging (back-counting):</strong> counting a table from behind and only sitting
+          down when the count turns favorable.
+        </li>
+        <li>
+          <strong>Heat:</strong> casino attention on a suspected counter
+        </li>
+        <li>
+          <strong>CSM:</strong> continuous shuffling machine used for recycling cards after every hand,
+          making counting impossible.
+        </li>
+      </GuideUl>
 
       <GuideH2 id="where-the-edge-comes-from">Where the Edge Comes From</GuideH2>
       <GuideP>
@@ -265,6 +317,7 @@ export const cardCountingOverviewGuide: Guide = {
   description: 'The shared foundation and common concepts behind every counting system',
   sections: [
     { id: 'what-counting-does', title: 'What Counting Does' },
+    { id: 'terminology', title: 'Terminology' },
     { id: 'where-the-edge-comes-from', title: 'Where the Edge Comes From' },
     { id: 'running-count', title: 'The Running Count' },
     { id: 'balanced-unbalanced', title: 'Balanced and Unbalanced Systems' },

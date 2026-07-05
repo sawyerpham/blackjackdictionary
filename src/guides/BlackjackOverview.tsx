@@ -61,9 +61,6 @@ function Content() {
         <li>
           <strong>House edge:</strong> mathematical advantage that casinos have over players, expressed as a percentage of each bet that the casino expects to keep over the long term.
         </li>
-        <li>
-          <strong>Decks:</strong> Number of standard 52-card decks used in the game. Fewer decks generally favor the player, while more decks increase the house edge.
-        </li>
       </GuideUl>
       <GuideH2 id="how-a-round-plays">How a Round Plays</GuideH2>
       <GuideP>
@@ -88,14 +85,14 @@ function Content() {
         </li>
       </GuideUl>
       <GuideP>
-        The dealer then plays by fixed rules — drawing to at least 17 with no choices — and the
+        The dealer plays by fixed rules, drawing to at least 17, and the
         higher total wins. Going over 21 is a bust and an immediate loss, and equal totals push.
       </GuideP>
 
       <GuideH2 id="the-house-edge">The House Edge</GuideH2>
       <GuideP>
         The house wins because you act first: if you bust and the dealer later busts too, you still
-        lose. Correct play shrinks that advantage to roughly half a percent, and the table's rules
+        lose. Correct play turns the house edge to ~0.5%, and the table's rules
         set exactly where it lands. All figures below assume 3:2 payouts and correct basic
         strategy.
       </GuideP>
@@ -121,8 +118,7 @@ function Content() {
       </div>
       <GuideH3>The 6:5 Penalty</GuideH3>
       <GuideP>
-        If a table pays 6:5 instead of 3:2 on a blackjack, add roughly 1.4% to any figure above —
-        several times worse for the identical strategy.
+        If a table pays 6:5 instead of 3:2 on a blackjack, add ~1.4% to the house edge.
       </GuideP>
 
       <GuideH2 id="flat-betting">Flat Betting</GuideH2>
@@ -134,14 +130,14 @@ function Content() {
       </GuideP>
       <GuideP>
         Flat betting does not beat the house and only minimizes your losses.
-        Only card counting can turn the edge positive because it allows you to know when to increase bets as the odds improve
+        Only card counting can turn the edge positive because it allows you to know when to increase bets as odds improve.
       </GuideP>
 
       <GuideH2 id="table-selection">Table Selection</GuideH2>
       <GuideP>Ranked by impact on the house edge:</GuideP>
       <GuideUl>
         <li>
-          <strong>Payout:</strong> insist on 3:2. Never sit at 6:5 — it is the largest single
+          <strong>Payout:</strong> insist on 3:2. Never sit at 6:5, it is the largest single
           factor, worth about 1.4%.
         </li>
         <li>
@@ -168,11 +164,9 @@ function Content() {
         normal swings; higher bet sizes require proportionally more.
       </GuideP>
 
-      <GuideH2 id="where-next">Where Next</GuideH2>
+      <GuideH2 id="next">Next</GuideH2>
       <GuideP>
-        Learn the basic strategy chart until every play is automatic — that alone gets you to the
-        edges in the table above. When you want the edge on your side instead, start with the card
-        counting overview.
+        Learn the basic strategy chart until every play is automatic.
       </GuideP>
     </>
   );
@@ -184,12 +178,13 @@ export const blackjackOverviewGuide: Guide = {
   description: 'How the game works, the house edge, and betting it correctly',
   sections: [
     { id: 'the-game', title: 'The Game' },
+    { id: 'legend', title: 'Terminology' },
     { id: 'how-a-round-plays', title: 'How a Round Plays' },
     { id: 'the-house-edge', title: 'The House Edge' },
     { id: 'flat-betting', title: 'Flat Betting' },
     { id: 'table-selection', title: 'Table Selection' },
     { id: 'bankroll', title: 'Bankroll' },
-    { id: 'where-next', title: 'Where Next' },
+    { id: 'next', title: 'Next' },
   ],
   Content,
 };
