@@ -181,10 +181,6 @@ export function SettingsPage() {
       <div className="mx-auto max-w-4xl">
         <section className="rounded-lg bg-[var(--bg-second)] p-8">
           <h1 className="mb-6 text-3xl font-bold text-[var(--accent)]">Game Settings</h1>
-          <p className="mb-8 text-[var(--text-primary)]">
-            Configure the rules and parameters for your blackjack game. Different casinos use
-            different rules which can affect the optimal strategy.
-          </p>
 
           <form className="space-y-8" onSubmit={handleSave}>
             <SectionCard title="Basic Rules">

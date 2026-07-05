@@ -1,5 +1,5 @@
 import type { Guide } from './registry';
-import { GuideH2, GuideH3, GuideNote, GuideP, GuideUl } from './ui';
+import { GuideH2, GuideH3, GuideP, GuideUl } from './ui';
 
 const HOUSE_EDGE_ROWS = [
   {
@@ -41,10 +41,10 @@ function Content() {
         10, and an ace counts 1 or 11, whichever helps. A two-card 21 (ace and ten-value card) is a blackjack, and it pays 3:2 at a full-payout table.
       </GuideP>
 
-      <GuideH2 id="legend">Legend</GuideH2>
+      <GuideH2 id="legend">Terminology</GuideH2>
       <GuideUl>
         <li>
-          <strong>Soft [number]:</strong> refers to when you have an Ace that can be counted as either 1 or 11 without exceeding 21
+          <strong>Soft [number]:</strong> refers to a hand with an Ace that can be counted as either 1 or 11 without exceeding 21
         </li>
         
         <li>
@@ -55,7 +55,7 @@ function Content() {
              3:2 tables pay $1.50 for every $1, always play here.
           </li>
           <li>
-            6:5 tables pay $1.20 for every $1 increasing the house edge significantly.
+            6:5 tables pay $1.20 for every $1, increasing the house edge significantly.
           </li>
         </GuideUl>
         <li>
@@ -180,7 +180,7 @@ function Content() {
 
 export const blackjackOverviewGuide: Guide = {
   slug: 'blackjack-overview',
-  title: 'Overview of Blackjack',
+  title: 'Blackjack: Overview',
   description: 'How the game works, the house edge, and betting it correctly',
   sections: [
     { id: 'the-game', title: 'The Game' },

@@ -29,6 +29,9 @@ export function NavBar() {
           <NavLink to="/settings" className={linkClass}>
             Settings
           </NavLink>
+          <NavLink to="/about" className={linkClass}>
+            About
+          </NavLink>
         </div>
       </nav>
     </header>

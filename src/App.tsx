@@ -8,6 +8,7 @@ import { ChallengePage } from './pages/ChallengePage';
 import { GuidesPage } from './pages/GuidesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { THEMES, useSettingsStore } from './state/settingsStore';
+import { AboutPage } from './pages/AboutPage';
 
 function useAppliedTheme() {
   const themeKey = useSettingsStore((s) => s.settings.theme);
@@ -40,6 +41,7 @@ function App() {
         <Route path="/guides" element={<GuidesPage />} />
         <Route path="/guides/:slug" element={<GuidesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/about" element={<AboutPage />} />
       </Routes>
     </div>
   );

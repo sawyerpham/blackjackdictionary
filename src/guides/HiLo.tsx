@@ -226,7 +226,7 @@ function Content() {
   );
 }
 
-export const hiLoIllustrious18Guide: Guide = {
+export const hiloGuide: Guide = {
   slug: 'hi-lo-illustrious-18',
   title: 'Hi-Lo System',
   description: 'A balanced level-1 count with valuable deviations',
