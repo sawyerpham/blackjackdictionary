@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import { blackjackOverviewGuide } from './BlackjackOverview';
 import { basicStrategyGuide } from './BasicStrategyChart';
-import { hiLoIllustrious18Guide } from './HiLoIllustrious18';
+import { hiloGuide } from './hilo';
 import { cardCountingOverviewGuide } from './CardCountingOverview';
 import { knockOutGuide } from './KnockOut';
 import { hiOpt2Guide } from './HiOpt2';
@@ -30,7 +30,7 @@ export const GUIDES: Guide[] = [
   blackjackOverviewGuide,
   basicStrategyGuide,
   cardCountingOverviewGuide,
-  hiLoIllustrious18Guide,
+  hiloGuide,
   knockOutGuide,
   hiOpt2Guide,
   omega2Guide,

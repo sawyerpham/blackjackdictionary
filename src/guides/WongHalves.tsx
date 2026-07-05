@@ -59,16 +59,13 @@ function Content() {
         conversion.
       </GuideP>
 
-      <GuideH2 id="reality-check">Reality Check</GuideH2>
-      <GuideNote>
-        Wong Halves has the best betting correlation of any workable system, but its lead over
-        simpler counts is small and is easily erased by the errors the fractions cause under real
+      <GuideH2 id="notes">Notes</GuideH2>
+      <GuideP>
+        While Wong Halves has the best betting correlation of any workable system, its lead over
+        methods is small and is erased by any mistakes the harder mental math causes under real
         conditions. It is worth using only if you can run it cleanly for hours. If the fractions
         cost you accuracy, a simpler system will earn more.
-      </GuideNote>
 
-      <GuideH2 id="accuracy-check">Accuracy Check</GuideH2>
-      <GuideP>
         A full deck counted correctly returns to zero. If you are using doubled tags, a full deck
         returns to zero on the doubled scale as well.
       </GuideP>
@@ -84,8 +81,7 @@ export const wongHalvesGuide: Guide = {
     { id: 'profile', title: 'Profile' },
     { id: 'tags', title: 'The Card Tags' },
     { id: 'doubling-fix', title: 'The Fractions and the Doubling Fix' },
-    { id: 'reality-check', title: 'Reality Check' },
-    { id: 'accuracy-check', title: 'Accuracy Check' },
+    { id: 'notes', title: 'Notes' },
   ],
   Content,
 };
