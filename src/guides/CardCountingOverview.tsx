@@ -155,6 +155,20 @@ function Content() {
         at high counts and the minimum at low counts is the single most important skill in counting. 
         Deviations from basic strategy add only a small amount on top, and are secondary to betting.
       </GuideP>
+      <GuideP>
+         If you walk into any Vegas Strip casino you can expect:
+         <GuideUl>
+          <li>
+            <strong>80-95%</strong> low-limit ($5-$25 min bets) tables use CSMs.
+          </li>
+          <li>
+            <strong>45-70%</strong> mid-limit ($50-$100 min bets) tables use CSMs.
+          </li>
+          <li>
+            <strong>Almost no</strong> high-limit ($100-$500+ min bets) tables use CSMs.
+          </li>
+         </GuideUl>
+      </GuideP>
 
       <GuideH2 id="running-count">The Running Count</GuideH2>
       <GuideP>
