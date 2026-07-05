@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import { blackjackOverviewGuide } from './BlackjackOverview';
 import { basicStrategyGuide } from './BasicStrategyChart';
-import { hiloGuide } from './hilo';
+import { hiloGuide } from './HiLo';
 import { cardCountingOverviewGuide } from './CardCountingOverview';
 import { knockOutGuide } from './KnockOut';
 import { hiOpt2Guide } from './HiOpt2';

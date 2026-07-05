@@ -374,6 +374,28 @@ function evSplit(
 // already dealt should already be removed by the caller).
 // ---------------------------------------------------------------------------
 
+/**
+ * The actions evaluate() would price for this hand, without computing any EVs.
+ * Mirrors evaluate()'s legality gates exactly so the UI can render action
+ * buttons before the (slow) EV calculation finishes.
+ */
+export function availableActions(
+  player: Rank[],
+  rules: Rules = VEGAS_6DECK,
+  splitsAlreadyTaken: number = 0,
+): Action[] {
+  const h = handOf(player);
+  const isTwoCard = player.length === 2;
+  const isPair = isTwoCard && rankIndex(player[0]) === rankIndex(player[1]);
+  const actions: Action[] = ['stand', 'hit'];
+  if (isTwoCard && rules.allowDoubleDown && isDoubleAllowed(h, rules.doubleDownRestriction)) {
+    actions.push('double');
+  }
+  if (isPair && splitsAlreadyTaken < rules.maxSplits) actions.push('split');
+  if (isTwoCard && rules.lateSurrender) actions.push('surrender');
+  return actions;
+}
+
 export function evaluate(
   player: Rank[],
   dealerUp: Rank,

@@ -1,5 +1,5 @@
 import type { Guide } from './registry';
-import { GuideH2, GuideNote, GuideP, GuideUl, TagValuesTable } from './ui';
+import { GuideH2, GuideP, GuideUl, TagValuesTable } from './ui';
 
 const HALVES_TAGS = [
   { cards: '5', value: '+1.5', tone: 'plus' as const },

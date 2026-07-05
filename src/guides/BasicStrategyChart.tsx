@@ -34,7 +34,7 @@ function row(hand: string, codes: string): ChartRow {
   return { hand, cells: codes.split(' ') as ActionCode[] };
 }
 
-const HARD_TOTALS: ChartRow[] = [
+export const HARD_TOTALS: ChartRow[] = [
   row('17+', 'S S S S S S S S S S'),
   row('16', 'S S S S S H H Rh Rh Rh'),
   row('15', 'S S S S S H H H Rh Rh'),
@@ -47,7 +47,7 @@ const HARD_TOTALS: ChartRow[] = [
   row('8', 'H H H H H H H H H H'),
 ];
 
-const SOFT_TOTALS: ChartRow[] = [
+export const SOFT_TOTALS: ChartRow[] = [
   row('A,9', 'S S S S S S S S S S'),
   row('A,8', 'S S S S Ds S S S S S'),
   row('A,7', 'Ds Ds Ds Ds Ds S S H H H'),
@@ -58,7 +58,7 @@ const SOFT_TOTALS: ChartRow[] = [
   row('A,2', 'H H H D D H H H H H'),
 ];
 
-const PAIRS: ChartRow[] = [
+export const PAIRS: ChartRow[] = [
   row('A,A', 'P P P P P P P P P P'),
   row('10,10', 'S S S S S S S S S S'),
   row('9,9', 'P P P P P S P P S S'),
@@ -71,15 +71,15 @@ const PAIRS: ChartRow[] = [
   row('2,2', 'P P P P P P H H H H'),
 ];
 
-function StrategyTable({ rows }: { rows: ChartRow[] }) {
+export function StrategyTable({ rows }: { rows: ChartRow[] }) {
   return (
     <div className="mb-4 overflow-x-auto">
-      <table className="w-full min-w-[34rem] border-separate border-spacing-0.5 text-center text-sm font-semibold">
+      <table className="border-separate border-spacing-0.5 text-center text-xs font-semibold">
         <thead>
           <tr>
-            <th className="rounded bg-[var(--bg-third)] p-2 text-[var(--text-primary)]">Hand</th>
+            <th className="rounded bg-[var(--bg-third)] px-2 py-1.5 text-[var(--text-primary)]">Hand</th>
             {DEALER_UPCARDS.map((up) => (
-              <th key={up} className="w-[8%] rounded bg-[var(--bg-third)] p-2 text-[var(--text-primary)]">
+              <th key={up} className="min-w-8 rounded bg-[var(--bg-third)] px-1 py-1.5 text-[var(--text-primary)]">
                 {up}
               </th>
             ))}
@@ -88,9 +88,9 @@ function StrategyTable({ rows }: { rows: ChartRow[] }) {
         <tbody>
           {rows.map((r) => (
             <tr key={r.hand}>
-              <td className="rounded bg-[var(--bg-third)] p-2 text-[var(--text-primary)]">{r.hand}</td>
+              <td className="rounded bg-[var(--bg-third)] px-2 py-1.5 text-[var(--text-primary)]">{r.hand}</td>
               {r.cells.map((code, i) => (
-                <td key={i} title={CODE_LABEL[code]} className={`rounded p-2 ${CODE_STYLE[code]}`}>
+                <td key={i} title={CODE_LABEL[code]} className={`rounded px-1 py-1.5 ${CODE_STYLE[code]}`}>
                   {code}
                 </td>
               ))}
@@ -102,7 +102,7 @@ function StrategyTable({ rows }: { rows: ChartRow[] }) {
   );
 }
 
-function Legend() {
+export function Legend() {
   const entries: ActionCode[] = ['S', 'H', 'D', 'Ds', 'P', 'Rh', 'Rp'];
   return (
     <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">

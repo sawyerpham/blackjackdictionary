@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent, ReactNode } from 'react';
-import { evaluate, type Action as EngineAction, type Evaluation } from '../engine/blackjack-engine';
+import {
+  availableActions,
+  evaluate,
+  type Action as EngineAction,
+  type Evaluation,
+} from '../engine/blackjack-engine';
 import { toEngineRules, useSettingsStore } from '../state/settingsStore';
 import {
   BET_STEP,
@@ -13,6 +18,7 @@ import {
   type HandState,
 } from '../state/simulatorLogic';
 import { PlayingCard } from '../components/PlayingCard';
+import { ReferencePanel } from '../components/ReferencePanel';
 import { countDisplay, getCountingSystem } from '../engine/countingSystems';
 
 const BALANCE_KEY = 'blackjack-balance';
@@ -48,6 +54,68 @@ const ACTION_LABELS: Record<EngineAction, string> = {
 
 function formatMoney(n: number): string {
   return `$${Math.round(n).toLocaleString()}`;
+}
+
+/** Heat gained per 100ms tick once the decision timer has expired (~14s overtime to fill). */
+const HEAT_PER_TICK = 0.7;
+
+/** Running pacing aggregates for Realistic mode. Display-only — never feeds the game. */
+interface PacingStats {
+  decisionCount: number;
+  decisionTotal: number;
+  slowDecisions: number;
+  handCount: number;
+  handTotal: number;
+}
+
+const EMPTY_PACING: PacingStats = {
+  decisionCount: 0,
+  decisionTotal: 0,
+  slowDecisions: 0,
+  handCount: 0,
+  handTotal: 0,
+};
+
+function formatSeconds(total: number, count: number): string {
+  return count > 0 ? `${(total / count).toFixed(1)}s` : '—';
+}
+
+function DecisionTimer({ remaining, total }: { remaining: number; total: number }) {
+  const pct = total > 0 ? Math.min(100, (remaining / total) * 100) : 0;
+  const expired = remaining <= 0;
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-medium text-[var(--text-muted)]">Decision</span>
+      <div className="h-2 w-28 overflow-hidden rounded-full bg-black/30">
+        <div
+          className={`h-full rounded-full ${expired ? 'bg-red-500' : 'bg-[var(--accent)]'}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span
+        className={`w-10 text-right text-xs font-semibold ${
+          expired ? 'text-red-400' : 'text-[var(--text-primary)]'
+        }`}
+      >
+        {remaining.toFixed(1)}s
+      </span>
+    </div>
+  );
+}
+
+function HeatBar({ heat }: { heat: number }) {
+  const color = heat < 40 ? 'bg-emerald-500' : heat < 75 ? 'bg-amber-400' : 'bg-red-500';
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-medium text-[var(--text-muted)]">Heat</span>
+      <div className="h-2 w-28 overflow-hidden rounded-full bg-black/30">
+        <div
+          className={`h-full rounded-full transition-[width] ${color}`}
+          style={{ width: `${heat}%` }}
+        />
+      </div>
+    </div>
+  );
 }
 
 /** Local edit-buffer for a stat tile that supports "double-click to type a number". */
@@ -281,8 +349,7 @@ function HandView({
                     : hand.outcome.charAt(0).toUpperCase() + hand.outcome.slice(1)}
             </span>
           ) : (
-            isActive &&
-            evaluation && (
+            isActive && (
               <button
                 type="button"
                 onClick={onToggleRevealed}
@@ -290,7 +357,7 @@ function HandView({
               >
                 Optimal:{' '}
                 <span className={`transition-all ${revealed ? '' : 'blur-sm'}`}>
-                  {ACTION_LABELS[evaluation.best]}
+                  {evaluation ? ACTION_LABELS[evaluation.best] : '…'}
                 </span>
               </button>
             )
@@ -318,6 +385,19 @@ export function SimulatorPage() {
 
   // Shared across all hands so split hands inherit the current blur state.
   const [optimalRevealed, setOptimalRevealed] = useState(false);
+  const [referenceOpen, setReferenceOpen] = useState(false);
+
+  // Realistic mode: pacing pressure layered on top of the game — timers, heat,
+  // and stats only. Nothing here dispatches anything but the normal DEAL.
+  const [realisticMode, setRealisticMode] = useState(false);
+  const [heat, setHeat] = useState(0);
+  const [decisionRemaining, setDecisionRemaining] = useState(0);
+  const [autoDealRemaining, setAutoDealRemaining] = useState(0);
+  const [pacing, setPacing] = useState<PacingStats>(EMPTY_PACING);
+  const decisionStartRef = useRef<number | null>(null);
+  const handStartRef = useRef<number | null>(null);
+  const decisionSeconds = settings.realisticDecisionSeconds;
+  const clearSeconds = settings.realisticHandClearSeconds;
 
   useEffect(() => {
     localStorage.setItem(
@@ -335,10 +415,24 @@ export function SimulatorPage() {
   const activeHand = state.phase === 'player-turn' ? state.hands[state.activeHandIdx] : undefined;
   const dealerUp = state.dealerCards[0];
 
-  const evaluation: Evaluation | undefined = useMemo(() => {
-    if (!activeHand || !dealerUp) return undefined;
-    return evaluate(activeHand.cards, dealerUp, visibleShoe(state), rules, activeHand.splitsSoFar);
+  // Computed off the render pass so dealing/acting paints immediately; the
+  // "Optimal" line fills in whenever the EV calculation lands.
+  const [evaluation, setEvaluation] = useState<Evaluation | undefined>(undefined);
+  useEffect(() => {
+    setEvaluation(undefined);
+    if (!activeHand || !dealerUp || state.phase !== 'player-turn') return;
+    const id = window.setTimeout(() => {
+      setEvaluation(
+        evaluate(activeHand.cards, dealerUp, visibleShoe(state), rules, activeHand.splitsSoFar),
+      );
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [activeHand, dealerUp, state, rules]);
+
+  // Cheap legality (no EV math) so the action buttons never wait on evaluate().
+  const legalActions = activeHand
+    ? availableActions(activeHand.cards, rules, activeHand.splitsSoFar)
+    : [];
 
   const countLine = useMemo(
     () => countDisplay(getCountingSystem(settings.countingSystem), state.decks, visibleShoe(state)),
@@ -351,9 +445,75 @@ export function SimulatorPage() {
 
   const canDeal = state.phase !== 'player-turn' && state.balance >= state.currentBet;
 
+  // Decision countdown + heat build-up. Restarts at every decision point
+  // (any action replaces state.hands, so it doubles as the reset trigger).
+  useEffect(() => {
+    if (!realisticMode || state.phase !== 'player-turn') {
+      decisionStartRef.current = null;
+      return;
+    }
+    decisionStartRef.current = Date.now();
+    setDecisionRemaining(decisionSeconds);
+    const id = window.setInterval(() => {
+      const start = decisionStartRef.current;
+      if (start === null) return;
+      const elapsed = (Date.now() - start) / 1000;
+      setDecisionRemaining(Math.max(0, decisionSeconds - elapsed));
+      if (elapsed > decisionSeconds) setHeat((h) => Math.min(100, h + HEAT_PER_TICK));
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [realisticMode, state.phase, state.activeHandIdx, state.hands, decisionSeconds]);
+
+  // Record the hand's duration once it resolves.
+  useEffect(() => {
+    if (state.phase === 'player-turn') return;
+    const start = handStartRef.current;
+    if (start === null) return;
+    handStartRef.current = null;
+    const secs = (Date.now() - start) / 1000;
+    setPacing((p) => ({ ...p, handCount: p.handCount + 1, handTotal: p.handTotal + secs }));
+  }, [state.phase, state.hands]);
+
+  const handleDeal = () => {
+    if (realisticMode) {
+      setHeat(0);
+      handStartRef.current = Date.now();
+    }
+    dispatch({ type: 'DEAL', rules });
+  };
+
+  // Auto-deal the next hand after the clearing pause.
+  useEffect(() => {
+    if (!realisticMode || state.phase !== 'round-over') return;
+    if (state.balance < state.currentBet) return;
+    const deadline = Date.now() + clearSeconds * 1000;
+    setAutoDealRemaining(clearSeconds);
+    const id = window.setInterval(() => {
+      const left = (deadline - Date.now()) / 1000;
+      if (left > 0) {
+        setAutoDealRemaining(left);
+        return;
+      }
+      window.clearInterval(id);
+      setHeat(0);
+      handStartRef.current = Date.now();
+      dispatch({ type: 'DEAL', rules });
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [realisticMode, state.phase, state.hands, state.balance, state.currentBet, clearSeconds, rules]);
+
   const handleAction = (action: EngineAction) => {
     if (!activeHand) return;
     if (action === 'split' && activeHand.isSplitAces && !rules.allowResplitAces) return;
+    if (realisticMode && decisionStartRef.current !== null) {
+      const secs = (Date.now() - decisionStartRef.current) / 1000;
+      setPacing((p) => ({
+        ...p,
+        decisionCount: p.decisionCount + 1,
+        decisionTotal: p.decisionTotal + secs,
+        slowDecisions: p.slowDecisions + (secs > decisionSeconds ? 1 : 0),
+      }));
+    }
     dispatch({ type: action.toUpperCase() as 'HIT' | 'STAND' | 'DOUBLE' | 'SPLIT' | 'SURRENDER', rules });
   };
 
@@ -361,7 +521,17 @@ export function SimulatorPage() {
     <div className="container mx-auto flex-1 px-4 py-12 ">
       <div className="mx-auto max-w-4xl">
         <section className="rounded-lg bg-[var(--bg-second)] p-8">
-          <h1 className="mb-6 text-3xl font-bold text-[var(--accent)]">Blackjack Simulator</h1>
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-3xl font-bold text-[var(--accent)]">Blackjack Simulator</h1>
+            <button
+              type="button"
+              onClick={() => setReferenceOpen((o) => !o)}
+              aria-expanded={referenceOpen}
+              className="rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+            >
+              {referenceOpen ? 'Close Reference' : 'Reference'}
+            </button>
+          </div>
 
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
             <BalanceTile
@@ -408,7 +578,7 @@ export function SimulatorPage() {
           </div>
 
           <div className="mb-8">
-            <h3 className="mb-4 text-xl font-semibold text-[var(--accent-soft)]">Your Hands</h3>
+            <h3 className="mb-4 text-xl font-semibold text-[var(--accent-soft)]">Your Hand</h3>
             <div className="space-y-4">
               {state.hands.map((hand, i) => (
                 <HandView
@@ -424,11 +594,11 @@ export function SimulatorPage() {
             </div>
           </div>
 
-          {state.phase === 'player-turn' && activeHand && evaluation && (
+          {state.phase === 'player-turn' && activeHand && (
             <div className="flex flex-wrap justify-center gap-3">
               {ACTION_ORDER.map((action) => {
                 const available =
-                  evaluation.ev[action] !== undefined &&
+                  legalActions.includes(action) &&
                   (action !== 'split' || !(activeHand.isSplitAces && !rules.allowResplitAces));
                 return (
                   <button
@@ -454,15 +624,87 @@ export function SimulatorPage() {
               <button
                 type="button"
                 disabled={!canDeal}
-                onClick={() => dispatch({ type: 'DEAL', rules })}
+                onClick={handleDeal}
                 className="rounded-lg bg-[var(--accent-strong)] px-6 py-3 font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Deal Cards
               </button>
             </div>
           )}
+
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+            <label className="flex cursor-pointer items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={realisticMode}
+                onChange={(e) => {
+                  setRealisticMode(e.target.checked);
+                  setHeat(0);
+                }}
+                className="h-3.5 w-3.5 rounded border-gray-600 bg-gray-800"
+              />
+              <span className="text-xs font-medium text-[var(--text-primary)]">Realistic</span>
+            </label>
+            {realisticMode && (
+              <div className="flex flex-wrap items-center gap-5">
+                {state.phase === 'player-turn' && (
+                  <DecisionTimer remaining={decisionRemaining} total={decisionSeconds} />
+                )}
+                {state.phase === 'round-over' && canDeal && (
+                  <span className="text-xs text-[var(--text-muted)]">
+                    Next hand in {autoDealRemaining.toFixed(1)}s
+                  </span>
+                )}
+                <HeatBar heat={heat} />
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-lg bg-[var(--bg-second)] p-6">
+          <h2 className="mb-4 text-xl font-semibold text-[var(--accent-soft)]">Pacing</h2>
+          <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-5">
+            <div className="rounded-lg bg-[var(--bg-third)] p-4">
+              <p className="mb-1 text-sm text-[var(--text-muted)]">Avg Decision</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">
+                {formatSeconds(pacing.decisionTotal, pacing.decisionCount)}
+              </p>
+            </div>
+            <div className="rounded-lg bg-[var(--bg-third)] p-4">
+              <p className="mb-1 text-sm text-[var(--text-muted)]">Slow Decisions</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">
+                {pacing.decisionCount > 0 ? pacing.slowDecisions : '—'}
+              </p>
+            </div>
+            <div className="rounded-lg bg-[var(--bg-third)] p-4">
+              <p className="mb-1 text-sm text-[var(--text-muted)]">Avg Hand</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">
+                {formatSeconds(pacing.handTotal, pacing.handCount)}
+              </p>
+            </div>
+            <div className="rounded-lg bg-[var(--bg-third)] p-4">
+              <p className="mb-1 text-sm text-[var(--text-muted)]">Hands Played</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">
+                {pacing.handCount > 0 ? pacing.handCount : '—'}
+              </p>
+            </div>
+            <div className="rounded-lg bg-[var(--bg-third)] p-4">
+              <p className="mb-1 text-sm text-[var(--text-muted)]">Hands / Hour</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)]">
+                {pacing.handCount > 0
+                  ? Math.round(3600 / (pacing.handTotal / pacing.handCount + clearSeconds))
+                  : '—'}
+              </p>
+            </div>
+          </div>
         </section>
       </div>
+      <ReferencePanel
+        open={referenceOpen}
+        onClose={() => setReferenceOpen(false)}
+        systemKey={settings.countingSystem}
+        decks={state.decks}
+      />
     </div>
   );
 }

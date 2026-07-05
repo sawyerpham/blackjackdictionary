@@ -10,3 +10,17 @@
   --accent-soft: #34d399;
   --accent-strong: #059669;
 }
+
+/* Overscroll past the app container shows the html background; keep it on-theme. */
+html {
+  background-color: var(--bg-main);
+}
+
+@keyframes reference-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
