@@ -1,5 +1,5 @@
 import type { Guide } from './registry';
-import { GuideH2, GuideNote } from './ui';
+import { GuideH2, GuideNote, GuideP } from './ui';
 
 export type ActionCode = 'S' | 'H' | 'D' | 'Ds' | 'P' | 'Rh' | 'Rp';
 
@@ -123,8 +123,12 @@ export function Legend() {
 function Content() {
   return (
     <>
+      <GuideP>
+        Optimized using expected value calculations, surrender options included.
+        </GuideP>
       <GuideH2 id="legend">Legend</GuideH2>
       <Legend />
+      
 
       <GuideH2 id="hard-totals">Hard Totals</GuideH2>
       <StrategyTable rows={HARD_TOTALS} />
@@ -139,6 +143,9 @@ function Content() {
       <GuideNote>
         Dealer 2–6 = weak (let the dealer bust) · 7–A = strong (fight for a total).
       </GuideNote>
+      <GuideNote>
+        Most casinos don't allow surrender. However, you should still know when to, as it is an edge to you.
+      </GuideNote>
     </>
   );
 }
@@ -146,7 +153,7 @@ function Content() {
 export const basicStrategyGuide: Guide = {
   slug: 'basic-strategy-chart',
   title: 'Basic Strategy Chart',
-  description: 'The full chart for 4–8 decks, H17, DAS, late surrender',
+  description: 'Chart for 4–8 decks, H17, DAS (almost all Vegas Strip casinos)',
   sections: [
     { id: 'legend', title: 'How to Read the Chart' },
     { id: 'hard-totals', title: 'Hard Totals' },

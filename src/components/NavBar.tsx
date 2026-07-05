@@ -14,15 +14,15 @@ export function NavBar() {
           <NavLink to="/" end className={linkClass}>
             Home
           </NavLink>
-          <NavLink to="/calculator" className={linkClass}>
+          {/* <NavLink to="/calculator" className={linkClass}>
             Calculator
-          </NavLink>
+          </NavLink> */}
           <NavLink to="/simulator" className={linkClass}>
             Simulator
           </NavLink>
-          <NavLink to="/daily" className={linkClass}>
+          {/* <NavLink to="/daily" className={linkClass}>
             Challenge
-          </NavLink>
+          </NavLink> */}
           <NavLink to="/guides" className={linkClass}>
             Guides
           </NavLink>

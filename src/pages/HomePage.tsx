@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 const EDGE_STATS = [
-  { value: '~0.5%', label: 'house edge with basic strategy and flat bets' },
+  { value: '~0.5%', label: 'avg house edge with basic strategy and flat bets' },
   { value: '+0.5–1.5%', label: 'player edge counting a well-chosen game' },
 ];
 
@@ -17,7 +17,7 @@ const FEATURES = [
     tag: 'engine',
     title: 'Optimal-play feedback',
     blurb:
-      'An EV engine prices hit, stand, double, split, and surrender from the exact cards left in the shoe, and reveals the best play whenever you ask.',
+      'An engine that reveals the best play whenever you ask. Calculated using probability theory and card counting.',
     to: '/simulator',
   },
   {
@@ -59,15 +59,14 @@ const ROUTE_STEPS = [
 export function HomePage() {
   return (
     <div className="container mx-auto flex-1 px-4 py-10 sm:py-14">
-      <div className="mx-auto max-w-4xl space-y-12 sm:space-y-16">
+      <div className="mx-auto max-w-4xl space-y-12 sm:space-y-16">  
         {/* Hero */}
         <section>
           <h1 className="mb-3 max-w-3xl text-3xl font-bold leading-tight text-[var(--text-primary)] sm:text-5xl">
-            Play blackjack with the <span className="text-[var(--accent)]">math</span> on your
-            side.
+            <span className="text-[var(--accent)]">Blackjack simulation and strategy</span>
           </h1>
           <p className="mb-6 max-w-2xl text-sm text-[var(--text-muted)] sm:text-lg">
-            A full-rules simulator, the strategy chart, and a counting library from Hi-Lo to Wong
+            A clean, snappy, full-rules simulator, the strategy chart, and a counting guide library from Hi-Lo to Wong
             Halves.
           </p>
           <div className="mb-8 flex flex-wrap gap-3">

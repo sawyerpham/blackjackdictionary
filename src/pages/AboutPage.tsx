@@ -5,7 +5,7 @@ export function AboutPage() {
         <p className="mb-6 text-lg leading-relaxed text-[var(--text-muted)]">
           A collection of blackjack guides, strategy references, and interactive learning tools.
         </p>
-        <p className="text-sm text-[var(--text-muted)]">Created by Sawyer Pham</p>
+        <p className="text-sm text-[var(--text-muted)]">Sawyer Pham</p>
       </div>
     </div>
   );
