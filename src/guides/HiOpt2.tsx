@@ -31,15 +31,9 @@ function Content() {
       <GuideH2 id="tags">The Card Tags</GuideH2>
       <TagValuesTable rows={HI_OPT_2_TAGS} />
       <GuideP>
-        The tags net to zero over a full deck. The ace is neutral, which is handled by the side
-        count below.
-      </GuideP>
-
-      <GuideH2 id="running-true-count">Running and True Count</GuideH2>
-      <GuideP>
-        Hi-Opt II is balanced, so it uses the standard approach from the overview. Start at zero,
-        add each tag, then convert to a true count by dividing the running count by the decks
-        remaining. Bet and deviate off the true count.
+        The tags net to zero over a full deck, so the standard running-to-true-count conversion
+        from the overview applies unchanged. The ace is neutral, which is handled by the side count
+        below.
       </GuideP>
 
       <GuideH2 id="ace-side-count">The Ace Side Count</GuideH2>
@@ -58,10 +52,9 @@ function Content() {
 
       <GuideH2 id="deviations">Deviations</GuideH2>
       <GuideP>
-        Hi-Opt II uses index plays like any balanced system. The index numbers are specific to
-        Hi-Opt II and differ from other systems, and the full set comes with the system's strategy
-        tables. Insurance is the most valuable deviation, and Hi-Opt II calls it more accurately
-        than most systems.
+        Hi-Opt II's index numbers are its own and come with the system's strategy tables. Its
+        standout is insurance: with an insurance correlation of 0.91, it calls that bet more
+        accurately than any other common system.
       </GuideP>
 
       <GuideH2 id="accuracy-check">Accuracy Check</GuideH2>
@@ -75,12 +68,11 @@ function Content() {
 
 export const hiOpt2Guide: Guide = {
   slug: 'hi-opt-2',
-  title: 'The Hi-Opt II System',
+  title: 'Hi-Opt II System',
   description: 'A level-2 count built for playing accuracy and insurance, with an ace side count',
   sections: [
     { id: 'profile', title: 'Profile' },
     { id: 'tags', title: 'The Card Tags' },
-    { id: 'running-true-count', title: 'Running and True Count' },
     { id: 'ace-side-count', title: 'The Ace Side Count' },
     { id: 'deviations', title: 'Deviations' },
     { id: 'accuracy-check', title: 'Accuracy Check' },
