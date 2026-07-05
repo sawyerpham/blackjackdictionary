@@ -4,6 +4,10 @@ import { basicStrategyGuide } from './BasicStrategyChart';
 import { hiLoIllustrious18Guide } from './HiLoIllustrious18';
 import { cardCountingOverviewGuide } from './CardCountingOverview';
 import { knockOutGuide } from './KnockOut';
+import { hiOpt2Guide } from './HiOpt2';
+import { omega2Guide } from './Omega2';
+import { zenCountGuide } from './ZenCount';
+import { wongHalvesGuide } from './WongHalves';
 
 export interface GuideSection {
   /** Anchor id of the h2 this entry links to. */
@@ -28,4 +32,8 @@ export const GUIDES: Guide[] = [
   cardCountingOverviewGuide,
   hiLoIllustrious18Guide,
   knockOutGuide,
+  hiOpt2Guide,
+  omega2Guide,
+  zenCountGuide,
+  wongHalvesGuide,
 ];

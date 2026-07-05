@@ -14,7 +14,7 @@ export function GuideH2({ id, children }: { id: string; children: ReactNode }) {
 }
 
 export function GuideH3({ children }: { children: ReactNode }) {
-  return <h3 className="mb-2 mt-6 text-lg font-semibold text-emerald-400">{children}</h3>;
+  return <h3 className="mb-2 mt-6 text-lg font-semibold text-[var(--accent-soft)]">{children}</h3>;
 }
 
 export function GuideP({ children }: { children: ReactNode }) {
@@ -39,7 +39,7 @@ export function GuideOl({ children }: { children: ReactNode }) {
 
 export function GuideNote({ children }: { children: ReactNode }) {
   return (
-    <p className="mb-4 rounded-lg border-l-4 border-emerald-500 bg-[var(--bg-third)] p-4 text-sm leading-relaxed text-[var(--text-primary)]">
+    <p className="mb-4 rounded-lg border-l-4 border-[var(--accent)] bg-[var(--bg-third)] p-4 text-sm leading-relaxed text-[var(--text-primary)]">
       {children}
     </p>
   );
@@ -47,7 +47,7 @@ export function GuideNote({ children }: { children: ReactNode }) {
 
 export function GuideFormula({ children }: { children: ReactNode }) {
   return (
-    <p className="mb-4 rounded-lg bg-[var(--bg-third)] p-4 text-center font-mono text-sm text-emerald-400">
+    <p className="mb-4 rounded-lg bg-[var(--bg-third)] p-4 text-center font-mono text-sm text-[var(--accent-soft)]">
       {children}
     </p>
   );

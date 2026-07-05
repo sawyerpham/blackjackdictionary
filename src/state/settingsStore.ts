@@ -6,7 +6,7 @@ import { DEFAULT_COUNTING_SYSTEM, type CountingSystemKey } from '../engine/count
 export type BlackjackPayout = 1.5 | 1.2 | 1;
 export type { DoubleDownRestriction };
 
-export type ThemeKey = 'default' | 'obsidian' | 'midnight';
+export type ThemeKey = 'default' | 'obsidian' | 'crimson' | 'ocean' | 'highroller' | 'amethyst';
 
 export interface Theme {
   key: ThemeKey;
@@ -21,6 +21,12 @@ export interface Theme {
   textMuted: string;
   /** Primary readable text. */
   textPrimary: string;
+  /** Signature accent: headings, selected/hover borders, active nav. */
+  accent: string;
+  /** Lighter accent for secondary text (subheadings, hints, highlighted values). */
+  accentSoft: string;
+  /** Darker accent for filled buttons; `accent` is their hover state. */
+  accentStrong: string;
 }
 
 export const THEMES: Theme[] = [
@@ -32,6 +38,9 @@ export const THEMES: Theme[] = [
     bgThird: '#374151',
     textMuted: '#9ca3af',
     textPrimary: '#f3f4f6',
+    accent: '#10b981',
+    accentSoft: '#34d399',
+    accentStrong: '#059669',
   },
   {
     key: 'obsidian',
@@ -41,15 +50,57 @@ export const THEMES: Theme[] = [
     bgThird: '#1a1a1f',
     textMuted: '#717279',
     textPrimary: '#ffffff',
+    accent: '#10b981',
+    accentSoft: '#34d399',
+    accentStrong: '#059669',
   },
   {
-    key: 'midnight',
-    label: 'Midnight',
-    bgMain: '#0b0f1a',
-    bgSecond: '#141b2e',
-    bgThird: '#1e293b',
-    textMuted: '#7a8699',
-    textPrimary: '#f1f5f9',
+    key: 'crimson',
+    label: 'Crimson',
+    bgMain: '#150a0d',
+    bgSecond: '#1f1014',
+    bgThird: '#331a22',
+    textMuted: '#9b8b90',
+    textPrimary: '#f5f0f1',
+    accent: '#f43f5e',
+    accentSoft: '#fb7185',
+    accentStrong: '#e11d48',
+  },
+  {
+    key: 'ocean',
+    label: 'Ocean',
+    bgMain: '#06131d',
+    bgSecond: '#0b2130',
+    bgThird: '#143349',
+    textMuted: '#7f96a3',
+    textPrimary: '#eef6fa',
+    accent: '#06b6d4',
+    accentSoft: '#22d3ee',
+    accentStrong: '#0891b2',
+  },
+  {
+    key: 'highroller',
+    label: 'High Roller',
+    bgMain: '#0c0b09',
+    bgSecond: '#161511',
+    bgThird: '#26241d',
+    textMuted: '#a29a84',
+    textPrimary: '#f7f4ec',
+    accent: '#f59e0b',
+    accentSoft: '#fbbf24',
+    accentStrong: '#d97706',
+  },
+  {
+    key: 'amethyst',
+    label: 'Amethyst',
+    bgMain: '#110b1c',
+    bgSecond: '#1a1229',
+    bgThird: '#2b1f42',
+    textMuted: '#9c8fae',
+    textPrimary: '#f4f1f8',
+    accent: '#a855f7',
+    accentSoft: '#c084fc',
+    accentStrong: '#9333ea',
   },
 ];
 

@@ -12,9 +12,6 @@ import {
 } from '../state/settingsStore';
 import { COUNTING_SYSTEMS } from '../engine/countingSystems';
 
-// The one color that never changes with the theme — the app's signature accent.
-const ACCENT_GREEN = '#10b981';
-
 function Checkbox({
   id,
   checked,
@@ -60,7 +57,7 @@ function SectionCard({ title, children }: { title: string; children: ReactNode }
 function SubSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="pb-4">
-      <h3 className="mb-4 text-lg font-medium text-emerald-400">{title}</h3>
+      <h3 className="mb-4 text-lg font-medium text-[var(--accent-soft)]">{title}</h3>
       <div className="space-y-4">{children}</div>
     </div>
   );
@@ -74,10 +71,10 @@ function ThemeSwatch({ theme, selected, onClick }: { theme: Theme; selected: boo
       type="button"
       onClick={onClick}
       className={`relative h-24 select-none overflow-hidden rounded-2xl border-2 transition-all duration-75 active:translate-y-0.5 active:scale-95 ${
-        selected ? 'border-emerald-500' : 'border-transparent hover:border-emerald-500/60'
+        selected ? 'border-[var(--accent)]' : 'border-transparent hover:border-[color-mix(in_srgb,var(--accent)_60%,transparent)]'
       }`}
       style={{
-        background: `linear-gradient(to top right, ${theme.bgMain} 50%, ${ACCENT_GREEN} 50%)`,
+        background: `linear-gradient(to top right, ${theme.bgMain} 50%, ${theme.accent} 50%)`,
         // Keep the gradient out of the (transparent) border area so it doesn't bleed to the edges.
         backgroundClip: 'padding-box',
       }}
@@ -114,11 +111,11 @@ function CardCountingSection({
             }}
             className={`select-none rounded-lg border bg-[var(--bg-second)] p-4 text-center transition-all duration-75 active:translate-y-0.5 active:scale-95 ${
               draft.countingSystem === system.key
-                ? 'border-emerald-500'
-                : 'border-white/10 hover:border-emerald-500/60'
+                ? 'border-[var(--accent)]'
+                : 'border-white/10 hover:border-[color-mix(in_srgb,var(--accent)_60%,transparent)]'
             }`}
           >
-            <h3 className="mb-1 text-lg font-medium text-emerald-500">{system.label}</h3>
+            <h3 className="mb-1 text-lg font-medium text-[var(--accent)]">{system.label}</h3>
             <p className="text-sm text-[var(--text-muted)]">{system.description}</p>
           </button>
         ))}
@@ -183,7 +180,7 @@ export function SettingsPage() {
     <div className="container mx-auto flex-1 px-4 py-12">
       <div className="mx-auto max-w-4xl">
         <section className="rounded-lg bg-[var(--bg-second)] p-8">
-          <h1 className="mb-6 text-3xl font-bold text-emerald-500">Game Settings</h1>
+          <h1 className="mb-6 text-3xl font-bold text-[var(--accent)]">Game Settings</h1>
           <p className="mb-8 text-[var(--text-primary)]">
             Configure the rules and parameters for your blackjack game. Different casinos use
             different rules which can affect the optimal strategy.
@@ -333,7 +330,7 @@ export function SettingsPage() {
               {DIVIDER}
 
               <div>
-                <h3 className="mb-4 text-lg font-medium text-emerald-400">Player Options</h3>
+                <h3 className="mb-4 text-lg font-medium text-[var(--accent-soft)]">Player Options</h3>
                 <div className="space-y-4">
                   <Checkbox
                     id="allowLateSurrender"
@@ -363,9 +360,9 @@ export function SettingsPage() {
                       });
                       setSavedMessage(false);
                     }}
-                    className="select-none rounded-lg border border-white/10 bg-[var(--bg-second)] p-4 text-center transition-all duration-75 hover:border-emerald-500 active:translate-y-0.5 active:scale-95"
+                    className="select-none rounded-lg border border-white/10 bg-[var(--bg-second)] p-4 text-center transition-all duration-75 hover:border-[var(--accent)] active:translate-y-0.5 active:scale-95"
                   >
-                    <h3 className="mb-1 text-lg font-medium text-emerald-500">{preset.label}</h3>
+                    <h3 className="mb-1 text-lg font-medium text-[var(--accent)]">{preset.label}</h3>
                     <p className="text-sm text-[var(--text-muted)]">{preset.description}</p>
                   </button>
                 ))}
@@ -387,10 +384,10 @@ export function SettingsPage() {
                 </button>
               </div>
               <div className="flex items-center gap-4">
-                {savedMessage && <span className="text-sm text-emerald-400">Settings saved</span>}
+                {savedMessage && <span className="text-sm text-[var(--accent-soft)]">Settings saved</span>}
                 <button
                   type="submit"
-                  className="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-[var(--text-primary)] transition-colors hover:bg-emerald-500"
+                  className="rounded-lg bg-[var(--accent-strong)] px-4 py-2 font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--accent)]"
                 >
                   Save Settings
                 </button>

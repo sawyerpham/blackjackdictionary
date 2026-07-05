@@ -166,7 +166,7 @@ function BalanceTile({
             onFocus={(e) => e.currentTarget.select()}
             onClick={(e) => e.stopPropagation()}
             onDoubleClick={(e) => e.stopPropagation()}
-            className="w-32 rounded bg-[var(--bg-second)] text-center text-indigo-300 outline-none ring-1 ring-emerald-500"
+            className="w-32 rounded bg-[var(--bg-second)] text-center text-indigo-300 outline-none ring-1 ring-[var(--accent)]"
           />
         ) : (
           <span className="text-indigo-300">{formatMoney(balance)}</span>
@@ -213,7 +213,7 @@ function BetTile({
             onKeyDown={handleKeyDown}
             onBlur={cancel}
             onFocus={(e) => e.currentTarget.select()}
-            className="w-24 rounded bg-[var(--bg-second)] text-center text-yellow-500 outline-none ring-1 ring-emerald-500"
+            className="w-24 rounded bg-[var(--bg-second)] text-center text-yellow-500 outline-none ring-1 ring-[var(--accent)]"
           />
         ) : (
           <span
@@ -255,7 +255,7 @@ function HandView({
 
   return (
     <div
-      className={`rounded-lg bg-[var(--bg-third)] p-6 ${isActive ? 'ring-2 ring-emerald-500' : ''}`}
+      className={`rounded-lg bg-[var(--bg-third)] p-6 ${isActive ? 'ring-2 ring-[var(--accent)]' : ''}`}
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
         <span className="font-medium text-[var(--text-primary)]">
@@ -286,7 +286,7 @@ function HandView({
               <button
                 type="button"
                 onClick={onToggleRevealed}
-                className="text-sm text-emerald-400"
+                className="text-sm text-[var(--accent-soft)]"
               >
                 Optimal:{' '}
                 <span className={`transition-all ${revealed ? '' : 'blur-sm'}`}>
@@ -361,7 +361,7 @@ export function SimulatorPage() {
     <div className="container mx-auto flex-1 px-4 py-12 ">
       <div className="mx-auto max-w-4xl">
         <section className="rounded-lg bg-[var(--bg-second)] p-8">
-          <h1 className="mb-6 text-3xl font-bold text-emerald-500">Blackjack Simulator</h1>
+          <h1 className="mb-6 text-3xl font-bold text-[var(--accent)]">Blackjack Simulator</h1>
 
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
             <BalanceTile
@@ -389,7 +389,7 @@ export function SimulatorPage() {
           </div>
 
           <div className="mb-8">
-            <h3 className="mb-4 text-xl font-semibold text-emerald-400">Dealer</h3>
+            <h3 className="mb-4 text-xl font-semibold text-[var(--accent-soft)]">Dealer</h3>
             <div className="rounded-lg bg-[var(--bg-third)] p-6">
               <div className="mb-4 flex items-center gap-4">
                 <span className="font-medium text-[var(--text-primary)]">
@@ -408,7 +408,7 @@ export function SimulatorPage() {
           </div>
 
           <div className="mb-8">
-            <h3 className="mb-4 text-xl font-semibold text-emerald-400">Your Hands</h3>
+            <h3 className="mb-4 text-xl font-semibold text-[var(--accent-soft)]">Your Hands</h3>
             <div className="space-y-4">
               {state.hands.map((hand, i) => (
                 <HandView
@@ -439,7 +439,7 @@ export function SimulatorPage() {
                     className={`rounded-lg px-6 py-3 font-medium text-[var(--text-primary)] transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                       action === 'surrender'
                         ? 'bg-[var(--bg-third)] hover:brightness-125'
-                        : 'bg-emerald-600 hover:bg-emerald-500'
+                        : 'bg-[var(--accent-strong)] hover:bg-[var(--accent)]'
                     }`}
                   >
                     {ACTION_LABELS[action]}
@@ -455,7 +455,7 @@ export function SimulatorPage() {
                 type="button"
                 disabled={!canDeal}
                 onClick={() => dispatch({ type: 'DEAL', rules })}
-                className="rounded-lg bg-emerald-600 px-6 py-3 font-medium text-[var(--text-primary)] transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg bg-[var(--accent-strong)] px-6 py-3 font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Deal Cards
               </button>

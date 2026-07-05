@@ -1,13 +1,13 @@
 import { NavLink } from 'react-router-dom';
 
 const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `transition-colors ${isActive ? 'text-emerald-500' : 'text-[var(--text-primary)] hover:text-emerald-500'}`;
+  `transition-colors ${isActive ? 'text-[var(--accent)]' : 'text-[var(--text-primary)] hover:text-[var(--accent)]'}`;
 
 export function NavBar() {
   return (
     <header className="bg-[var(--bg-second)] shadow-md">
       <nav className="container mx-auto flex flex-col items-center gap-3 px-4 py-4 sm:flex-row sm:justify-between">
-        <NavLink to="/" className="text-xl font-bold text-emerald-500 sm:text-2xl">
+        <NavLink to="/" className="text-xl font-bold text-[var(--accent)] sm:text-2xl">
           Blackjack Dictionary
         </NavLink>
         <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 sm:gap-6">
@@ -28,9 +28,6 @@ export function NavBar() {
           </NavLink>
           <NavLink to="/settings" className={linkClass}>
             Settings
-          </NavLink>
-          <NavLink to="/about" className={linkClass}>
-            About
           </NavLink>
         </div>
       </nav>

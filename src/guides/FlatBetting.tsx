@@ -85,7 +85,7 @@ function Content() {
               <tr key={row.ruleset} className="border-b border-white/10">
                 <td className="p-3 font-medium text-[var(--text-primary)]">{row.ruleset}</td>
                 <td className="p-3 text-[var(--text-muted)]">{row.rules}</td>
-                <td className="p-3 font-medium text-emerald-400">{row.edge}</td>
+                <td className="p-3 font-medium text-[var(--accent-soft)]">{row.edge}</td>
               </tr>
             ))}
           </tbody>
