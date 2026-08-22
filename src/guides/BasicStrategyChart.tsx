@@ -73,13 +73,26 @@ export const PAIRS: ChartRow[] = [
 
 export function StrategyTable({ rows }: { rows: ChartRow[] }) {
   return (
-    <div className="mb-4 overflow-x-auto">
-      <table className="border-separate border-spacing-0.5 text-center text-xs font-semibold">
+    <div className="mb-4">
+      {/* table-fixed + w-full + percentage columns: the table can never grow
+          past its container, so all 11 columns fit a phone with no side-scroll. */}
+      <table className="w-full table-fixed border-separate border-spacing-[2px] text-center font-semibold">
+        <colgroup>
+          <col className="w-[16%]" />
+          {DEALER_UPCARDS.map((up) => (
+            <col key={up} className="w-[8.4%]" />
+          ))}
+        </colgroup>
         <thead>
           <tr>
-            <th className="rounded bg-[var(--bg-third)] px-2 py-1.5 text-[var(--text-primary)]">Hand</th>
+            <th className="overflow-hidden rounded bg-[var(--bg-third)] px-0 py-1.5 text-[clamp(0.55rem,2.3vw,0.75rem)] whitespace-nowrap text-[var(--text-primary)]">
+              Hand
+            </th>
             {DEALER_UPCARDS.map((up) => (
-              <th key={up} className="min-w-8 rounded bg-[var(--bg-third)] px-1 py-1.5 text-[var(--text-primary)]">
+              <th
+                key={up}
+                className="overflow-hidden rounded bg-[var(--bg-third)] px-0 py-1.5 text-[clamp(0.6rem,2.6vw,0.75rem)] text-[var(--text-primary)]"
+              >
                 {up}
               </th>
             ))}
@@ -88,9 +101,16 @@ export function StrategyTable({ rows }: { rows: ChartRow[] }) {
         <tbody>
           {rows.map((r) => (
             <tr key={r.hand}>
-              <td className="rounded bg-[var(--bg-third)] px-2 py-1.5 text-[var(--text-primary)]">{r.hand}</td>
+              <td className="overflow-hidden rounded bg-[var(--bg-third)] px-0 py-1.5 text-[clamp(0.55rem,2.3vw,0.75rem)] tracking-tight whitespace-nowrap text-[var(--text-primary)]">
+                {r.hand}
+              </td>
               {r.cells.map((code, i) => (
-                <td key={i} title={CODE_LABEL[code]} className={`rounded px-1 py-1.5 ${CODE_STYLE[code]}`}>
+                <td
+                  key={i}
+                  title={CODE_LABEL[code]}
+                  aria-label={`${r.hand} vs ${DEALER_UPCARDS[i]}: ${CODE_LABEL[code]}`}
+                  className={`overflow-hidden rounded px-0 py-1.5 text-[clamp(0.6rem,2.6vw,0.75rem)] tracking-tight ${CODE_STYLE[code]}`}
+                >
                   {code}
                 </td>
               ))}
