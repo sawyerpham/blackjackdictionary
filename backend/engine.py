@@ -9,6 +9,8 @@ Stand, hit and double are exact for the given shoe. Split uses fixed_odds_ev: th
 card odds, held fixed from there (exact split takes seconds for small pairs vs small upcards).
 """
 
+from functools import lru_cache
+
 RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 RANK_INDEX = {r: i for i, r in enumerate(RANKS)}
 
@@ -332,3 +334,85 @@ if __name__ == '__main__':
         s[RANK_INDEX[c]] -= 1
     evaluate(['2', '2'], '2', s)
     print(f'ok (worst-ish case 2,2 v 2: {time.perf_counter() - t:.2f}s)')
+
+
+
+@lru_cache(maxsize=1024)
+def _edge_parts(key):
+    """(EV from non-natural hands, P(player natural that the dealer doesn't match)) per initial bet.
+    Blackjack payout enters linearly as payout * the second term, so it never needs a recompute."""
+    rules = dict(key)
+    shoe0 = fresh_shoe(rules['decks'])
+    n = sum(shoe0)
+    ev, natural = 0.0, 0.0
+    for a in range(10):
+        for b in range(a, 10):
+            for u in range(10):
+                s = list(shoe0)
+                p = s[a] / n
+                s[a] -= 1
+                p *= s[b] / (n - 1)
+                s[b] -= 1
+                p *= s[u] / (n - 2)
+                s[u] -= 1
+                if not p:
+                    continue
+                if a != b:
+                    p *= 2  # either card order
+                bj_hole = 9 if u == 0 else 0 if u == 9 else -1
+                p_bj = s[bj_hole] / sum(s) if bj_hole != -1 else 0.0
+                if {a, b} == {0, 9}:  # player natural: pushes a dealer natural, else paid
+                    natural += p * (1 - p_bj)
+                    continue
+                best = max(fixed_odds_ev([RANKS[a], RANKS[b]], RANKS[u], s, rules).values())
+                # With a peek those EVs assume no dealer natural; a natural takes the bet first.
+                ev += p * (-p_bj + (1 - p_bj) * best if rules['dealerPeeks'] and p_bj else best)
+    return ev, natural
+
+
+def house_edge(rules):
+    """House edge in % of the initial bet, playing the best action (fixed-odds model) on every
+    starting deal: both player cards and the upcard drawn from a full shoe, weighted by probability."""
+    ev, natural = _edge_parts(tuple(sorted((k, v) for k, v in rules.items() if k != 'blackjackPays')))
+    return -(ev + rules['blackjackPays'] * natural) * 100
+
+
+# Base game for the breakdown: 6 decks, S17, 3:2, peek, double any two, DAS, no surrender,
+# split to 4 hands, no resplit/hit on split aces.
+EDGE_BASELINE = {**VEGAS_6DECK, 'hitSoft17': False, 'lateSurrender': False}
+
+def _yes(v):
+    return 'Allowed' if v else 'Not allowed'
+
+
+EDGE_FACTORS = [
+    ('Decks', ('decks',), lambda r: f"{r['decks']} deck{'s' if r['decks'] > 1 else ''}"),
+    ('Soft 17', ('hitSoft17',), lambda r: 'Dealer hits' if r['hitSoft17'] else 'Dealer stands'),
+    ('Blackjack pays', ('blackjackPays',), lambda r: {1.5: '3:2', 1.2: '6:5', 1: '1:1'}.get(r['blackjackPays'], str(r['blackjackPays']))),
+    ('Dealer peek', ('dealerPeeks',), lambda r: 'Peeks' if r['dealerPeeks'] else 'No peek'),
+    ('Doubling', ('allowDoubleDown', 'doubleDownRestriction'), lambda r: {
+        'any': 'Any two cards', 'hard9to11': 'Hard 9–11', 'hard10or11': 'Hard 10–11', 'hard9to11AndSoft': '9–11 + soft',
+    }[r['doubleDownRestriction']] if r['allowDoubleDown'] else 'Not allowed'),
+    ('Double after split', ('doubleAfterSplit',), lambda r: _yes(r['doubleAfterSplit'])),
+    ('Late surrender', ('lateSurrender',), lambda r: _yes(r['lateSurrender'])),
+    ('Splitting', ('maxSplits',), lambda r: f"Up to {r['maxSplits'] + 1} hands"),
+    ('Resplit aces', ('allowResplitAces',), lambda r: _yes(r['allowResplitAces'])),
+    ('Hit split aces', ('allowDrawAfterSplitAces',), lambda r: _yes(r['allowDrawAfterSplitAces'])),
+]
+
+
+def house_edge_breakdown(rules):
+    """Base-game edge, then each rule switched from the base value to `rules` one at a time (in
+    EDGE_FACTORS order); each delta is that rule's effect, and the deltas sum to the total.
+    Rules still at their base value cost no computation."""
+    cur = dict(EDGE_BASELINE)
+    base = prev = house_edge(cur)
+    factors = []
+    for label, keys, fmt in EDGE_FACTORS:
+        for k in keys:
+            cur[k] = rules[k]
+        edge = house_edge(cur)
+        factors.append({'factor': label, 'setting': fmt(rules), 'delta': round(edge - prev, 3),
+                        'isBase': all(rules[k] == EDGE_BASELINE[k] for k in keys)})
+        prev = edge
+    return {'base': round(base, 3), 'factors': factors, 'total': round(prev, 3)}

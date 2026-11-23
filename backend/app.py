@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from engine import chart, evaluate
+from engine import chart, evaluate, house_edge_breakdown
 
 Rank = Literal['A', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 DIST = Path(__file__).parent / 'dist'
@@ -55,6 +55,12 @@ def _chart(rules: tuple):
 def api_chart(rules: Rules):
     # blackjackPays never changes a decision, so it's dropped to share cache entries.
     return _chart(tuple(sorted(rules.model_dump(exclude={'blackjackPays'}).items())))
+
+
+@app.post('/api/house-edge')
+def api_house_edge(rules: Rules):
+    # Base game, each rule's effect, and the total. engine caches every intermediate rule set.
+    return house_edge_breakdown(rules.model_dump())
 
 
 if DIST.exists():
