@@ -119,13 +119,10 @@ export function ReferencePanel({
               ? 'Divide the running count by the decks remaining to get the true count, and bet off that.'
               : 'No true-count conversion needed — bet off the running count directly.'}
           </p>
-          <p className="mb-2 text-xs leading-relaxed text-[var(--text-muted)]">
-            Changes when you change the counting system
-          </p>
         </section>
         <section>
           <PanelHeading to="/bsc">Basic Strategy</PanelHeading>
-          <Legend />
+          <Legend surrender={rules.lateSurrender} />
           <PanelSubheading>Hard Totals</PanelSubheading>
           <StrategyTable compact rows={chart.hard} />
           <PanelSubheading>Soft Totals</PanelSubheading>

@@ -148,7 +148,7 @@ export function RuleGroups() {
   return (
     <div className="space-y-6">
       <Group title="Table">
-        <Row title="Decks" hint="Cards in the shoe">
+        <Row title="Decks">
           <Segmented
             label="Decks"
             value={s.decks}

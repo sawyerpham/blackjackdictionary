@@ -174,8 +174,9 @@ export function StrategyTable({ rows, compact = false }: { rows: ChartRow[]; com
   );
 }
 
-export function Legend({ codes }: { codes?: ActionCode[] }) {
-  const entries = codes ?? (Object.keys(CODE_LABEL) as ActionCode[]);
+/** `surrender` false hides the Rh/Rs/Rp codes, which the chart never uses without surrender. */
+export function Legend({ surrender = true }: { surrender?: boolean }) {
+  const entries = (Object.keys(CODE_LABEL) as ActionCode[]).filter((c) => surrender || !c.startsWith('R'));
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-2">
       {entries.map((code) => (

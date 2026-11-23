@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Guide } from './registry';
 import { GuideH2, GuideH3, GuideOl, GuideP, GuideUl } from './ui';
 
@@ -24,29 +25,6 @@ const HOUSE_EDGE_ROWS = [
   },
 ];
 
-  const RULE_ROWS = [
-    { rule: 'Single deck', edge: '0.48%' },
-    { rule: 'Early surrender against ten', edge: '0.24%' },
-    { rule: 'Player may double on any number of cards', edge: '0.23%' },
-    { rule: 'Double deck', edge: '0.19%' },
-    { rule: 'Player may draw to split aces', edge: '0.19%' },
-    { rule: 'Six-card Charlie', edge: '0.16%' },
-    { rule: 'Player may resplit aces', edge: '0.08%' },
-    { rule: 'Late surrender', edge: '0.08%' },
-    { rule: 'Four decks', edge: '0.06%' },
-    { rule: 'Five decks', edge: '0.03%' },
-    { rule: 'Six decks', edge: '0.02%' },
-    { rule: 'Split to only 3 hands', edge: '-0.01%' },
-    { rule: 'Player may double on 9–11 only', edge: '-0.09%' },
-    { rule: 'Split to only 2 hands', edge: '-0.10%' },
-    { rule: 'European no hole card', edge: '-0.11%' },
-    { rule: 'Player may not double after splitting', edge: '-0.14%' },
-    { rule: 'Player may double on 10,11 only', edge: '-0.18%' },
-    { rule: 'Dealer hits on soft 17', edge: '-0.22%' },
-    { rule: 'Blackjack pays 7–5', edge: '-0.45%' },
-    { rule: 'Blackjack pays 6–5', edge: '-1.39%' },
-    { rule: 'Blackjacks pay 1 to 1', edge: '-2.27%' },
-  ];
 
 function Content() {
   return (
@@ -193,33 +171,13 @@ function Content() {
       </GuideP>
 
       <GuideH2 id="table-selection">Table Selection</GuideH2>
-      <GuideP>Ranked by impact on the house edge:</GuideP>
-      <div className="mb-4">
-      <table className="w-full border-separate border-spacing-0.5 text-sm">
-        <thead>
-          <tr>
-            <th className="rounded bg-[var(--bg-third)] p-2 text-left font-semibold text-[var(--text-primary)]">
-              Rule Variation
-            </th>
-            <th className="rounded bg-[var(--bg-third)] p-2 text-right font-semibold text-[var(--text-primary)]">
-              House Edge Change
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {RULE_ROWS.map((r) => (
-            <tr key={r.rule}>
-              <td className="rounded bg-[var(--bg-second)] p-2 text-left font-semibold text-[var(--text-primary)]">
-                {r.rule}
-              </td>
-              <td className="rounded bg-[var(--bg-second)] p-2 text-right text-[var(--text-primary)]">
-                {r.edge}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      <GuideP>
+        Table rules move the house edge more than anything else you control. The{' '}
+        <Link to="/bsc#house-edge" className="text-[var(--accent-soft)] hover:underline">
+          house edge breakdown
+        </Link>{' '}
+        on the BSC tab shows what each rule adds or removes for any table you set up.
+      </GuideP>
       <GuideP>
         <b>Example: </b>A 3:2 table with S17, few decks, and surrender can run under 0.35%,
         while a 6:5 table runs near 2.0% for the identical strategy.

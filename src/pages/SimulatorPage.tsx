@@ -353,6 +353,85 @@ const OUTCOME_STYLE: Record<NonNullable<HandState['outcome']>, [string, string]>
   surrender: ['Surrender', 'bg-zinc-600 text-white'],
 };
 
+/** Side view of a card stack (shoe or discard tray), drawn to scale against a full shoe. */
+function CardStack({
+  label,
+  count,
+  full,
+  cut,
+  shoe = false,
+  deckScale,
+}: {
+  label: string;
+  count: number;
+  full: number;
+  /** Shoe only: share of the shoe dealt before the cut card (deck penetration). */
+  cut?: number;
+  shoe?: boolean;
+  /** Decks in a full shoe: draws a scale bar one deck (52 cards) long above the stack. */
+  deckScale?: number;
+}) {
+  const pct = Math.min(100, (count / full) * 100);
+  // Like a real shoe, the stack is pushed to the dealing end (the slanted front, left), so dealing
+  // shrinks it from the back. The cut card has a fixed (1 - penetration) of a full shoe behind it,
+  // so it travels toward the front with the stack; once it reaches the front, it's out.
+  const behindCut = cut === undefined ? 0 : (1 - cut) * 100;
+  const cutOut = cut !== undefined && pct <= behindCut;
+  const cutFromFront = Math.max(0, pct - behindCut);
+  return (
+    <div
+      role="img"
+      aria-label={`${label}: ${count} cards${cut !== undefined ? (cutOut ? ', cut card out, shuffle next hand' : '') : ''}`}
+      className="relative flex flex-col items-center gap-1"
+    >
+      {deckScale !== undefined && (
+        // Sits just above the tray without shifting it (keeps it level with the shoe). Same width and
+        // padding as the body, so the bar's % width matches one deck on the card track.
+        <div className="absolute bottom-full left-0 mb-1 w-20 px-1.5 sm:w-[8.75rem]" aria-hidden>
+          {/* Ruler across the whole tray: top rule, a tick hanging down at every deck boundary. */}
+          <div className="relative h-1.5 border-t border-white/35">
+            {Array.from({ length: deckScale + 1 }, (_, i) => (
+              <div
+                key={i}
+                className="absolute top-0 h-full w-px -translate-x-1/2 bg-white/35"
+                style={{ left: `${(i / deckScale) * 100}%` }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      <div className={`relative w-20 p-1.5 sm:w-[8.75rem] ${shoe ? 'pl-4 sm:pl-5' : ''}`}>
+        {/* Body on its own layer so the shoe's slanted front doesn't clip the protruding cut card. */}
+        <div
+          aria-hidden
+          className={`absolute inset-0 ring-1 ring-white/10 ${
+            shoe
+              ? 'rounded-r-md bg-black/45 [clip-path:polygon(14%_0,100%_0,100%_100%,0_100%)]'
+              : 'rounded-md bg-white/[0.04]'
+          }`}
+        />
+        <div className="relative flex h-9 justify-start sm:h-[2.8rem]">
+          <div
+            className="h-full rounded-[2px] bg-[repeating-linear-gradient(90deg,#f4f4f5_0_1.5px,#a1a1aa_1.5px_2.5px)] shadow-[0_1px_2px_rgb(0_0_0/0.5)] transition-[width] duration-300"
+            style={{ width: `${pct}%` }}
+          />
+          {cut !== undefined && (
+            // Cut card: a thin, muted red sliver among the card edges, deliberately low-key.
+            <div
+              title={cutOut ? 'Cut card is out: shuffle after this hand' : 'Cut card'}
+              className="absolute -top-0.5 -bottom-0.5 w-[2px] rounded-[1px] bg-red-500/75 transition-[left] duration-300"
+              style={{ left: `calc(${cutFromFront}% - 1px)` }}
+            />
+          )}
+        </div>
+      </div>
+      <span className="font-mono text-xs text-white/45 tabular-nums">
+        {label} {count}
+      </span>
+    </div>
+  );
+}
+
 /** Casino felt print: rule text curved along the table's arc, dealer rule inside a band. */
 function FeltPrint({ payout, hitSoft17 }: { payout: string; hitSoft17: boolean }) {
   const id = useId();
@@ -536,6 +615,13 @@ export function SimulatorPage() {
 
   const canDeal = !playerTurn && state.balance >= state.currentBet;
   const cardsLeft = state.shoe.reduce((a, b) => a + b, 0);
+  const fullShoe = 52 * state.decks;
+  const cardsOnTable =
+    state.dealerCards.length +
+    state.hands.reduce((n, h) => n + h.cards.length, 0) +
+    state.npcs.reduce((n, seat) => n + seat.reduce((m, h) => m + h.cards.length, 0), 0);
+  // Cards still on the felt go to the discard tray when the next hand is dealt.
+  const discards = Math.max(0, fullShoe - cardsLeft - cardsOnTable);
 
   // Decision countdown + heat build-up. Restarts at every decision point
   // (any action replaces state.hands, so it doubles as the reset trigger).
@@ -718,6 +804,22 @@ export function SimulatorPage() {
         aria-label="Blackjack table"
         className="relative overflow-hidden rounded-t-[2rem] rounded-b-[45%_30%] border border-white/[0.07] bg-[radial-gradient(ellipse_at_50%_0%,#16263f_0%,#0e1828_55%,#0a111d_100%)] px-3 pt-5 pb-10 shadow-[inset_0_1px_0_rgb(255_255_255/0.06),0_30px_60px_-30px_rgb(0_0_0/0.8)] sm:px-8 sm:pt-7 sm:pb-14"
       >
+        {/* Phone: own row above the dealer so a long dealer hand can't run into them. sm+: table corners. */}
+        <div className="mb-4 flex items-start justify-between pt-6 sm:contents">
+          <div className="sm:absolute sm:top-8 sm:left-8">
+            <CardStack label="Discards" count={discards} full={fullShoe} deckScale={state.decks} />
+          </div>
+          <div className="sm:absolute sm:top-8 sm:right-8">
+            <CardStack
+              shoe
+              label="Shoe"
+              count={cardsLeft}
+              full={fullShoe}
+              cut={PENETRATION_OPTIONS[state.penetrationIdx].value}
+            />
+          </div>
+        </div>
+
         {/* Dealer */}
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center gap-2">

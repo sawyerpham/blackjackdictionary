@@ -1,7 +1,6 @@
-import { Link } from 'react-router-dom';
-import { Group, PresetPicker, Row, RuleGroups, Segmented, rulesSummary } from '../components/RuleControls';
+import { Group, PresetPicker, Row, RuleGroups, Segmented } from '../components/RuleControls';
 import { COUNTING_SYSTEMS } from '../engine/countingSystems';
-import { DEFAULT_SETTINGS, useSettingsStore } from '../state/settingsStore';
+import { useSettingsStore } from '../state/settingsStore';
 
 export function SettingsPage() {
   const settings = useSettingsStore((s) => s.settings);
@@ -12,13 +11,6 @@ export function SettingsPage() {
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
       <header className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Settings</h1>
-        <p className="mt-1 text-sm text-[var(--text-muted)]">
-          Saved automatically. Used by the simulator and the{' '}
-          <Link to="/bsc" className="text-[var(--accent-soft)] hover:underline">
-            strategy chart
-          </Link>
-          . Current: <span className="font-mono text-[var(--text-primary)]">{rulesSummary(settings)}</span>
-        </p>
       </header>
 
       <div className="space-y-8">
@@ -32,10 +24,9 @@ export function SettingsPage() {
         <RuleGroups />
 
         <section>
-          <h2 className="mb-1 text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
+          <h2 className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
             Counting system
           </h2>
-          <p className="mb-2 text-xs text-[var(--text-muted)]">Shown at the table and in the reference panel</p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {COUNTING_SYSTEMS.map((system) => {
               const active = settings.countingSystem === system.key;
@@ -78,8 +69,7 @@ export function SettingsPage() {
           </Row>
         </Group>
 
-        <div className="flex items-center justify-between border-t border-[var(--line)] pt-6">
-          <p className="text-xs text-[var(--text-muted)]">Defaults: {rulesSummary(DEFAULT_SETTINGS)}</p>
+        <div className="flex justify-end border-t border-[var(--line)] pt-6">
           <button
             type="button"
             onClick={reset}
