@@ -1,3 +1,4 @@
+from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
@@ -6,7 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from engine import evaluate
+from engine import chart, evaluate
 
 Rank = Literal['A', '2', '3', '4', '5', '6', '7', '8', '9', '10']
 DIST = Path(__file__).parent / 'dist'
@@ -43,6 +44,17 @@ app = FastAPI(docs_url=None, redoc_url=None)
 def api_evaluate(req: EvalRequest):
     shoe = [max(0, min(n, 128)) for n in req.shoe]
     return evaluate(req.player, req.dealerUp, shoe, req.rules.model_dump(), req.splitsAlreadyTaken)
+
+
+@lru_cache(maxsize=512)
+def _chart(rules: tuple):
+    return chart(dict(rules))
+
+
+@app.post('/api/chart')
+def api_chart(rules: Rules):
+    # blackjackPays never changes a decision, so it's dropped to share cache entries.
+    return _chart(tuple(sorted(rules.model_dump(exclude={'blackjackPays'}).items())))
 
 
 if DIST.exists():

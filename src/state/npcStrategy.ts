@@ -1,5 +1,5 @@
 import { rankIndex, type Rank } from '../engine/blackjack-engine';
-import { HARD_TOTALS, PAIRS, SOFT_TOTALS, type ActionCode } from '../guides/BasicStrategyChart';
+import { DEFAULT_CHART, type ActionCode } from '../components/StrategyChart';
 
 /**
  * NPC decision logic: a straight lookup into the published basic strategy
@@ -32,9 +32,9 @@ function keyedRows(
   return map;
 }
 
-const HARD = keyedRows(HARD_TOTALS, (h) => parseInt(h, 10)); // '17+' → 17
-const SOFT = keyedRows(SOFT_TOTALS, (h) => 11 + Number(h.split(',')[1])); // 'A,7' → soft 18
-const PAIR = keyedRows(PAIRS, (h) => (h.startsWith('A') ? 0 : Number(h.split(',')[0]) - 1)); // rankIndex
+const HARD = keyedRows(DEFAULT_CHART.hard, (h) => parseInt(h, 10)); // '17+' → 17
+const SOFT = keyedRows(DEFAULT_CHART.soft, (h) => 11 + Number(h.split(',')[1])); // 'A,7' → soft 18
+const PAIR = keyedRows(DEFAULT_CHART.pairs, (h) => (h.startsWith('A') ? 0 : Number(h.split(',')[0]) - 1)); // rankIndex
 
 export function chartDecision(cards: Rank[], dealerUp: Rank, ctx: NpcContext): NpcAction {
   const col = dealerColumn(dealerUp);
@@ -63,6 +63,8 @@ export function chartDecision(cards: Rank[], dealerUp: Rank, ctx: NpcContext): N
       return 'split';
     case 'Rh':
       return ctx.canSurrender ? 'surrender' : 'hit';
+    case 'Rs':
+      return ctx.canSurrender ? 'surrender' : 'stand';
     case 'Rp':
       return ctx.canSurrender ? 'surrender' : ctx.canSplit ? 'split' : 'hit';
   }

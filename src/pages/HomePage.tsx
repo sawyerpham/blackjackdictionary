@@ -52,7 +52,7 @@ const FEATURES = [
 
 const ROUTE_STEPS = [
   { n: '1', label: 'Learn the game', to: '/guides/blackjack-overview' },
-  { n: '2', label: 'Learn basic strategy', to: '/guides/basic-strategy-chart' },
+  { n: '2', label: 'Learn basic strategy', to: '/bsc' },
   { n: '3', label: 'Count cards', to: '/guides/card-counting-overview' },
 ];
 

@@ -57,6 +57,8 @@ export interface SimState {
   npcCount: number;
   /** One entry per NPC seat; a seat grows extra hands when it splits. */
   npcs: NpcHandState[][];
+  /** Increments every deal; seeds the decorative card suits so they stay put within a round. */
+  round: number;
 }
 
 export function initialSimState(decks: number, balance: number, defaultBalance: number): SimState {
@@ -75,6 +77,7 @@ export function initialSimState(decks: number, balance: number, defaultBalance: 
     message: '',
     npcCount: 0,
     npcs: [],
+    round: 0,
   };
 }
 
@@ -428,6 +431,7 @@ export function simulatorReducer(state: SimState, action: SimAction): SimState {
         activeHandIdx: 0,
         phase,
         message,
+        round: state.round + 1,
       };
     }
 

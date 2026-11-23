@@ -1,12 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  HARD_TOTALS,
-  Legend,
-  PAIRS,
-  SOFT_TOTALS,
-  StrategyTable,
-} from '../guides/BasicStrategyChart';
+import { Legend, StrategyTable, useStrategyChart } from './StrategyChart';
+import type { Rules } from '../engine/blackjack-engine';
 import { getCountingSystem, type CountingSystemKey } from '../engine/countingSystems';
 import { TagValuesTable, type TagTone } from '../guides/ui';
 
@@ -48,7 +43,7 @@ function tagRows(values: number[]) {
 /** Section heading that links to the full guide. */
 function PanelHeading({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <h3 className="mb-4 border-b border-white/10 pb-2 text-xl font-semibold">
+    <h3 className="mb-4 border-b border-[var(--line)] pb-2 text-lg font-semibold">
       <Link
         to={to}
         className="text-[var(--text-primary)] transition-colors hover:text-[var(--accent)] hover:underline"
@@ -68,12 +63,15 @@ export function ReferencePanel({
   onClose,
   systemKey,
   decks,
+  rules,
 }: {
   open: boolean;
   onClose: () => void;
   systemKey: CountingSystemKey | undefined;
   decks: number;
+  rules: Rules;
 }) {
+  const { chart } = useStrategyChart(rules);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -91,14 +89,14 @@ export function ReferencePanel({
   return (
     <aside
       aria-label="Reference"
-      className="fixed inset-y-0 right-0 z-50 w-full max-w-md animate-[reference-slide-in_0.25s_ease-out] overflow-y-auto border-l border-white/10 bg-[var(--bg-main)] shadow-2xl"
+      className="fixed inset-y-0 right-0 z-50 w-full max-w-md animate-[reference-slide-in_0.25s_ease-out] overflow-y-auto border-l border-[var(--line)] bg-[var(--bg-main)] shadow-2xl"
     >
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[var(--bg-main)] px-4 py-4">
-        <h2 className="text-lg font-bold text-[var(--accent)]">Reference</h2>
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--line)] bg-[var(--bg-main)] px-4 py-4">
+        <h2 className="font-semibold">Reference</h2>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border border-white/20 px-3 py-1.5 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+          className="rounded-md border border-[var(--line)] px-3 py-1.5 text-sm hover:border-white/20"
         >
           Close
         </button>
@@ -126,14 +124,14 @@ export function ReferencePanel({
           </p>
         </section>
         <section>
-          <PanelHeading to="/guides/basic-strategy-chart">Basic Strategy</PanelHeading>
+          <PanelHeading to="/bsc">Basic Strategy</PanelHeading>
           <Legend />
           <PanelSubheading>Hard Totals</PanelSubheading>
-          <StrategyTable rows={HARD_TOTALS} />
+          <StrategyTable compact rows={chart.hard} />
           <PanelSubheading>Soft Totals</PanelSubheading>
-          <StrategyTable rows={SOFT_TOTALS} />
+          <StrategyTable compact rows={chart.soft} />
           <PanelSubheading>Pairs</PanelSubheading>
-          <StrategyTable rows={PAIRS} />
+          <StrategyTable compact rows={chart.pairs} />
         </section>
 
       </div>

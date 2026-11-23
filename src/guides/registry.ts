@@ -1,6 +1,5 @@
 import type { ComponentType } from 'react';
 import { blackjackOverviewGuide } from './BlackjackOverview';
-import { basicStrategyGuide } from './BasicStrategyChart';
 import { hiloGuide } from './HiLo';
 import { cardCountingOverviewGuide } from './CardCountingOverview';
 import { knockOutGuide } from './KnockOut';
@@ -28,7 +27,6 @@ export interface Guide {
 /** Sidebar order. Add new guides here. */
 export const GUIDES: Guide[] = [
   blackjackOverviewGuide,
-  basicStrategyGuide,
   cardCountingOverviewGuide,
   hiloGuide,
   knockOutGuide,
