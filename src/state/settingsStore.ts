@@ -54,47 +54,64 @@ export interface Preset {
   settings: GameSettings;
 }
 
+// Every rule is spelled out (not inherited from DEFAULT_SETTINGS) so a preset can't drift when defaults change.
+// No preset offers surrender: it's rare at real tables.
 export const PRESETS: Preset[] = [
   {
     key: 'vegas',
     label: 'Las Vegas Strip',
-    description: '6 decks, 3:2 payout, DAS',
+    description: '6 decks · H17 · 3:2 · DAS',
     settings: {
       ...DEFAULT_SETTINGS,
       decks: 6,
       blackjackPayout: 1.5,
       hitSoft17: true,
-      allowDoubleAfterSplit: true,
-      allowLateSurrender: true,
       dealerPeeks: true,
+      allowDoubleDown: true,
+      doubleDownRestriction: 'any',
+      allowDoubleAfterSplit: true,
+      allowLateSurrender: false,
+      maxSplits: 3,
+      allowResplitAces: false,
+      allowDrawAfterSplitAces: false,
     },
   },
   {
     key: 'atlanticCity',
     label: 'Atlantic City',
-    description: '8 decks, 3:2 payout, S17',
+    description: '8 decks · S17 · 3:2 · DAS',
     settings: {
       ...DEFAULT_SETTINGS,
       decks: 8,
       blackjackPayout: 1.5,
       hitSoft17: false,
-      allowDoubleAfterSplit: true,
-      allowLateSurrender: true,
       dealerPeeks: true,
+      allowDoubleDown: true,
+      doubleDownRestriction: 'any',
+      allowDoubleAfterSplit: true,
+      allowLateSurrender: false,
+      maxSplits: 3,
+      allowResplitAces: false,
+      allowDrawAfterSplitAces: false,
     },
   },
   {
     key: 'european',
     label: 'European Style',
-    description: '6 decks, no surrender, H17',
+    description: '6 decks · S17 · no hole card',
     settings: {
       ...DEFAULT_SETTINGS,
       decks: 6,
       blackjackPayout: 1.5,
-      hitSoft17: true,
+      hitSoft17: false,
+      dealerPeeks: false,
+      allowDoubleDown: true,
+      doubleDownRestriction: 'hard9to11',
       allowDoubleAfterSplit: false,
       allowLateSurrender: false,
-      dealerPeeks: false,
+      maxSplits: 1,
+      allowResplitAces: false,
+      allowDrawAfterSplitAces: false,
     },
   },
 ];
