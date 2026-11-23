@@ -42,13 +42,13 @@ function row(hand: string, codes: string): ChartRow {
   return { hand, cells: codes.split(' ') as ActionCode[] };
 }
 
-/** Published 4–8 deck, H17, DAS, late-surrender chart. NPCs play from it, and the
- *  BSC tab shows it until the rule-specific chart arrives from the backend. */
+/** The chart for the default rules (6D, H17, DAS, no surrender), as the backend computes it.
+ *  NPCs play from it, and the BSC tab shows it until the rule-specific chart arrives. */
 export const DEFAULT_CHART: StrategyChartData = {
   hard: [
-    row('17+', 'S S S S S S S S S Rs'),
-    row('16', 'S S S S S H H Rh Rh Rh'),
-    row('15', 'S S S S S H H H Rh Rh'),
+    row('17+', 'S S S S S S S S S S'),
+    row('16', 'S S S S S H H H H H'),
+    row('15', 'S S S S S H H H H H'),
     row('14', 'S S S S S H H H H H'),
     row('13', 'S S S S S H H H H H'),
     row('12', 'H H S S S H H H H H'),
@@ -71,7 +71,7 @@ export const DEFAULT_CHART: StrategyChartData = {
     row('A,A', 'P P P P P P P P P P'),
     row('10,10', 'S S S S S S S S S S'),
     row('9,9', 'P P P P P S P P S S'),
-    row('8,8', 'P P P P P P P P P Rp'),
+    row('8,8', 'P P P P P P P P P P'),
     row('7,7', 'P P P P P P H H H H'),
     row('6,6', 'P P P P P H H H H H'),
     row('5,5', 'D D D D D D D D H H'),

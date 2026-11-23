@@ -41,7 +41,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   allowDoubleAfterSplit: true,
   hitSoft17: true,
   dealerPeeks: true,
-  allowLateSurrender: true,
+  allowLateSurrender: false,
   countingSystem: DEFAULT_COUNTING_SYSTEM,
   realisticHandClearSeconds: 2,
   realisticDecisionSeconds: 8,

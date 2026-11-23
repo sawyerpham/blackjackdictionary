@@ -67,7 +67,7 @@ export function initialSimState(decks: number, balance: number, defaultBalance: 
     defaultBalance,
     currentBet: Math.max(MIN_BET, BET_STEP),
     decks,
-    penetrationIdx: 1,
+    penetrationIdx: 2, // 3/4 (PENETRATION_OPTIONS)
     shoe: freshShoe(decks),
     dealerCards: [],
     dealerHoleHidden: false,
