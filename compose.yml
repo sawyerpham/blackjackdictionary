@@ -1,0 +1,12 @@
+# Runs on the Oracle VM next to the fantasy app. Its Caddy (network deploy_default)
+# does HTTPS and proxies blackjack.sawyerpham.dev -> blackjack:8000.
+#   docker compose up -d --build
+services:
+  blackjack:
+    build: .
+    restart: unless-stopped
+    networks: [deploy_default]
+
+networks:
+  deploy_default:
+    external: true

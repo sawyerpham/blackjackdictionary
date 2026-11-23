@@ -2,7 +2,6 @@ import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent, ReactNode } from 'react';
 import {
   availableActions,
-  evaluate,
   type Action as EngineAction,
   type Evaluation,
   type Rank,
@@ -460,12 +459,24 @@ export function SimulatorPage() {
   useEffect(() => {
     setEvaluation(undefined);
     if (!activeHand || !dealerUp || state.phase !== 'player-turn') return;
-    const id = window.setTimeout(() => {
-      setEvaluation(
-        evaluate(activeHand.cards, dealerUp, visibleShoe(state), rules, activeHand.splitsSoFar),
-      );
-    }, 0);
-    return () => window.clearTimeout(id);
+    // EV math runs in the Python backend (backend/engine.py).
+    const ctrl = new AbortController();
+    fetch('/api/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        player: activeHand.cards,
+        dealerUp,
+        shoe: visibleShoe(state),
+        rules,
+        splitsAlreadyTaken: activeHand.splitsSoFar,
+      }),
+      signal: ctrl.signal,
+    })
+      .then((r) => (r.ok ? r.json() : undefined))
+      .then(setEvaluation)
+      .catch(() => {}); // aborted or offline: the hint just stays "…"
+    return () => ctrl.abort();
   }, [activeHand, dealerUp, state, rules]);
 
   // Cheap legality (no EV math) so the action buttons never wait on evaluate().

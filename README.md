@@ -2,7 +2,7 @@
 
 Learn blackjack basic strategy and card counting, then practice it.
 
-**Live:** https://sawyerpham.github.io/blackjackdictionary/
+**Live:** https://blackjack.sawyerpham.dev
 
 ## Features
 
@@ -13,8 +13,11 @@ Learn blackjack basic strategy and card counting, then practice it.
 ## Run locally
 
 ```sh
-npm install
-npm run dev
+pip install -r backend/requirements.txt
+cd backend && uvicorn app:app --port 8000   # EV math API (Python)
+npm install && npm run dev                  # frontend, proxies /api to :8000
 ```
 
-Built with React, TypeScript, Vite, and Tailwind.
+Deploy: `docker compose up -d --build` (see `compose.yml`).
+
+Built with React, TypeScript, Vite, Tailwind, and a FastAPI backend for the EV math.
