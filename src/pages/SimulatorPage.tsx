@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useReducer, useRef, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import {
   availableActions,
@@ -10,6 +10,7 @@ import { toEngineRules, useSettingsStore } from '../state/settingsStore';
 import {
   BET_STEP,
   DEFAULT_BALANCE,
+  MAX_NPCS,
   PENETRATION_OPTIONS,
   handTotal,
   initialSimState,
@@ -20,10 +21,40 @@ import {
 } from '../state/simulatorLogic';
 import { PlayingCard } from '../components/PlayingCard';
 import { ReferencePanel } from '../components/ReferencePanel';
-import { rulesSummary } from '../components/RuleControls';
+import { ProfitTracker } from '../components/ProfitTracker';
 import { countDisplay, getCountingSystem } from '../engine/countingSystems';
 
 const BALANCE_KEY = 'blackjack-balance';
+const PROFIT_KEY = 'blackjack-profit';
+/** Rounds kept for the profit chart. */
+const MAX_TRACKED_ROUNDS = 5000;
+
+function loadProfit(): number[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PROFIT_KEY) ?? '[]');
+    return Array.isArray(parsed) ? parsed.filter((n) => typeof n === 'number') : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Net dollars a finished round won or lost, from each hand's result and (doubled) bet. */
+function roundProfit(hands: HandState[], blackjackPays: number): number {
+  return hands.reduce((sum, h) => {
+    switch (h.outcome) {
+      case 'win':
+        return sum + h.bet;
+      case 'blackjack':
+        return sum + h.bet * blackjackPays;
+      case 'lose':
+        return sum - h.bet;
+      case 'surrender':
+        return sum - h.bet / 2;
+      default:
+        return sum;
+    }
+  }, 0);
+}
 
 interface StoredBalance {
   balance: number;
@@ -207,6 +238,45 @@ function BalanceStat({
   );
 }
 
+const STEP_BTN =
+  'flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-sm transition-colors hover:bg-white/20 disabled:opacity-40';
+
+function PlayersStat({
+  count,
+  disabled,
+  dispatch,
+}: {
+  count: number;
+  disabled: boolean;
+  dispatch: (a: { type: 'ADJUST_NPC_COUNT'; delta: number }) => void;
+}) {
+  return (
+    <Stat label="Players" hint="NPC seats at the table" disabled={disabled}>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          aria-label="Remove a player"
+          disabled={disabled || count <= 0}
+          onClick={() => dispatch({ type: 'ADJUST_NPC_COUNT', delta: -1 })}
+          className={STEP_BTN}
+        >
+          −
+        </button>
+        <span className="w-4 text-center">{count}</span>
+        <button
+          type="button"
+          aria-label="Add a player"
+          disabled={disabled || count >= MAX_NPCS}
+          onClick={() => dispatch({ type: 'ADJUST_NPC_COUNT', delta: 1 })}
+          className={STEP_BTN}
+        >
+          +
+        </button>
+      </div>
+    </Stat>
+  );
+}
+
 function BetStat({
   bet,
   disabled,
@@ -217,8 +287,7 @@ function BetStat({
   dispatch: (a: { type: 'SET_BET'; value: number } | { type: 'ADJUST_BET'; delta: number }) => void;
 }) {
   const edit = useEditableNumber((n) => dispatch({ type: 'SET_BET', value: n }));
-  const btn =
-    'flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-sm transition-colors hover:bg-white/20 disabled:opacity-40';
+  const btn = STEP_BTN;
   return (
     <Stat label="Bet" hint="Double-click the amount to type one" disabled={disabled}>
       <div className="flex items-center gap-1.5">
@@ -283,6 +352,36 @@ const OUTCOME_STYLE: Record<NonNullable<HandState['outcome']>, [string, string]>
   lose: ['Lose', 'bg-rose-500 text-white'],
   surrender: ['Surrender', 'bg-zinc-600 text-white'],
 };
+
+/** Casino felt print: rule text curved along the table's arc, dealer rule inside a band. */
+function FeltPrint({ payout, hitSoft17 }: { payout: string; hitSoft17: boolean }) {
+  const id = useId();
+  const arc = (y: number) => `M 40 ${y} Q 300 ${y + 90} 560 ${y}`;
+  return (
+    <svg
+      viewBox="0 0 600 150"
+      aria-label={`Blackjack pays ${payout}. Dealer ${hitSoft17 ? 'hits' : 'stands on'} soft 17.`}
+      className="pointer-events-none mx-auto block w-full max-w-[560px] select-none"
+    >
+      <defs>
+        <path id={`${id}a`} d={arc(22)} />
+        <path id={`${id}b`} d={arc(80)} />
+      </defs>
+      <text fill="rgb(255 255 255 / 0.24)" fontSize="23" fontWeight="700" letterSpacing="7">
+        <textPath href={`#${id}a`} startOffset="50%" textAnchor="middle">
+          BLACKJACK PAYS {payout.toUpperCase()}
+        </textPath>
+      </text>
+      <path d={arc(56)} fill="none" stroke="rgb(255 255 255 / 0.13)" strokeWidth="1.5" />
+      <path d={arc(94)} fill="none" stroke="rgb(255 255 255 / 0.13)" strokeWidth="1.5" />
+      <text fill="rgb(255 255 255 / 0.19)" fontSize="13" fontWeight="600" letterSpacing="3.5">
+        <textPath href={`#${id}b`} startOffset="50%" textAnchor="middle">
+          {hitSoft17 ? 'DEALER MUST DRAW TO 16 AND HIT SOFT 17' : "DEALER MUST DRAW TO 16 AND STAND ON ALL 17'S"}
+        </textPath>
+      </text>
+    </svg>
+  );
+}
 
 /** Cards fanned with overlap, like they sit on a table. */
 function Fan({ children }: { children: ReactNode }) {
@@ -370,6 +469,8 @@ export function SimulatorPage() {
   const [decisionRemaining, setDecisionRemaining] = useState(0);
   const [autoDealRemaining, setAutoDealRemaining] = useState(0);
   const [pacing, setPacing] = useState<PacingStats>(EMPTY_PACING);
+  const [profitRounds, setProfitRounds] = useState<number[]>(loadProfit);
+  const recordedRoundRef = useRef(0);
   const decisionStartRef = useRef<number | null>(null);
   const handStartRef = useRef<number | null>(null);
   const decisionSeconds = settings.realisticDecisionSeconds;
@@ -465,6 +566,22 @@ export function SimulatorPage() {
     setPacing((p) => ({ ...p, handCount: p.handCount + 1, handTotal: p.handTotal + secs }));
   }, [state.phase, state.hands]);
 
+  // Record each round's net once, when it resolves (also catches rounds that end on the deal).
+  useEffect(() => {
+    if (state.phase !== 'round-over' || state.round === 0 || recordedRoundRef.current === state.round) return;
+    recordedRoundRef.current = state.round;
+    const net = roundProfit(state.hands, rules.blackjackPays);
+    setProfitRounds((rs) => [...rs, net].slice(-MAX_TRACKED_ROUNDS));
+  }, [state.phase, state.round, state.hands, rules.blackjackPays]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(PROFIT_KEY, JSON.stringify(profitRounds));
+    } catch {
+      // storage blocked: tracker just won't persist
+    }
+  }, [profitRounds]);
+
   const handleDeal = () => {
     if (!canDeal) return;
     if (realisticMode) {
@@ -534,6 +651,9 @@ export function SimulatorPage() {
   const npcLeft = state.npcs.slice(Math.ceil(state.npcs.length / 2));
   const npcRight = state.npcs.slice(0, Math.ceil(state.npcs.length / 2));
   const seatLabel = (i: number) => `Seat ${i + 1}`;
+  // Too many seats + split hands for one row: give NPCs their own row above you (always the layout on phones).
+  const seatUnits = state.npcs.length + state.hands.reduce((n, h) => n + 1 + h.cards.length / 2, 0);
+  const crowded = seatUnits > 7;
   const r = state.round;
 
   return (
@@ -562,14 +682,7 @@ export function SimulatorPage() {
             >
               {PENETRATION_OPTIONS[state.penetrationIdx].label}
             </Stat>
-            <Stat
-              label="Players"
-              hint="NPC seats · click to cycle"
-              disabled={playerTurn}
-              onClick={() => dispatch({ type: 'CYCLE_NPC_COUNT' })}
-            >
-              {state.npcCount}
-            </Stat>
+            <PlayersStat count={state.npcCount} disabled={playerTurn} dispatch={dispatch} />
           </div>
         </div>
         <div className="flex w-full items-center justify-end gap-1.5 border-t border-[var(--line)] pt-1.5 pr-1 sm:w-auto sm:border-0 sm:pt-0">
@@ -628,17 +741,14 @@ export function SimulatorPage() {
           </div>
         </div>
 
-        {/* Felt print */}
-        <div className="pointer-events-none my-5 text-center select-none sm:my-7">
-          <p className="text-[11px] font-semibold tracking-[0.35em] text-white/[0.18] uppercase sm:text-xs">
-            Blackjack pays {settings.blackjackPayout === 1.5 ? '3 to 2' : settings.blackjackPayout === 1.2 ? '6 to 5' : '1 to 1'}
-          </p>
-          <p className="mt-1 text-[10px] tracking-[0.25em] text-white/[0.13] uppercase sm:text-[11px]">
-            {rulesSummary(settings)}
-          </p>
+        <div className="my-4 text-center sm:my-6">
+          <FeltPrint
+            payout={settings.blackjackPayout === 1.5 ? '3 to 2' : settings.blackjackPayout === 1.2 ? '6 to 5' : '1 to 1'}
+            hitSoft17={settings.hitSoft17}
+          />
           <p
             aria-live="polite"
-            className={`mx-auto mt-4 h-6 text-sm font-medium transition-opacity ${state.message ? 'text-white/85' : 'opacity-0'}`}
+            className={`mx-auto mt-1 h-6 text-sm font-medium transition-opacity ${state.message ? 'text-white/85' : 'opacity-0'}`}
           >
             {state.message}
           </p>
@@ -646,12 +756,18 @@ export function SimulatorPage() {
 
         {/* Seats: NPCs split around you, like a real arc */}
         {/* Phone: NPCs get their own row above you (player block is order-last + full width). */}
-        <div className="flex flex-wrap items-end justify-center gap-x-3 gap-y-5 sm:flex-nowrap sm:gap-6">
+        <div
+          className={`flex flex-wrap items-end justify-center gap-x-3 gap-y-5 sm:gap-x-6 ${crowded ? '' : 'sm:flex-nowrap'}`}
+        >
           {npcLeft.map((seat, k) => {
             const i = Math.ceil(state.npcs.length / 2) + k;
             return <NpcSeat key={i} label={seatLabel(i)} hands={seat} seedPrefix={`${r}-n${i}`} />;
           })}
-          <div className="order-last flex w-full flex-wrap items-end justify-center gap-1 sm:order-none sm:w-auto sm:gap-3">
+          <div
+            className={`order-last flex w-full flex-wrap items-end justify-center gap-1 sm:gap-3 ${
+              crowded ? '' : 'sm:order-none sm:w-auto'
+            }`}
+          >
             {state.hands.length === 0 ? (
               <div className="flex flex-col items-center gap-2 pb-1">
                 <div className="h-[5.5rem] w-[3.9rem] rounded-lg border border-dashed border-white/15 sm:h-28 sm:w-20" />
@@ -779,6 +895,14 @@ export function SimulatorPage() {
           </dl>
         </section>
       )}
+
+      <ProfitTracker
+        rounds={profitRounds}
+        onReset={() => {
+          recordedRoundRef.current = state.round;
+          setProfitRounds([]);
+        }}
+      />
 
       <ReferencePanel
         open={referenceOpen}

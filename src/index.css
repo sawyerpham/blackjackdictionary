@@ -48,3 +48,16 @@ html {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Native MathML (About page): a real math font where the OS has one. */
+math {
+  font-family: 'Cambria Math', 'STIX Two Math', 'Latin Modern Math', math;
+}
+
+/* Slide-out panels scroll without a visible scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

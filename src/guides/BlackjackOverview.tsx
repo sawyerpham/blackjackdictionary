@@ -155,8 +155,8 @@ function Content() {
         lose. All figures below assume 3:2 payouts and correct basic
         strategy. As stakes get higher, rules usually favor the player, so the house edge can drop to ~0.35% at high-stakes tables.
       </GuideP>
-      <div className="mb-4 overflow-x-auto">
-        <table className="w-full min-w-[32rem] border-collapse text-sm">
+      <div className="mb-4">
+        <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-[var(--bg-third)] text-left">
               <th className="rounded-tl-lg p-3 font-semibold text-[var(--text-primary)]">Ruleset</th>
@@ -194,7 +194,7 @@ function Content() {
 
       <GuideH2 id="table-selection">Table Selection</GuideH2>
       <GuideP>Ranked by impact on the house edge:</GuideP>
-      <div className="mb-4 max-h-64 overflow-y-auto">
+      <div className="mb-4">
       <table className="w-full border-separate border-spacing-0.5 text-sm">
         <thead>
           <tr>

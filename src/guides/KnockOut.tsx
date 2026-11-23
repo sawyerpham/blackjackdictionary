@@ -10,8 +10,8 @@ const KO_TAGS = [
 /** Two-column decks table with signed count chips, matching the deviation-table look. */
 function DeckCountTable({ valueHeader, rows }: { valueHeader: string; rows: [number, number][] }) {
   return (
-    <div className="mb-4 overflow-x-auto">
-      <table className="w-full min-w-[16rem] border-separate border-spacing-0.5 text-center text-sm font-semibold">
+    <div className="mb-4">
+      <table className="w-full border-separate border-spacing-0.5 text-center text-sm font-semibold">
         <thead>
           <tr>
             <th className="rounded bg-[var(--bg-third)] p-2 text-[var(--text-primary)]">Decks</th>

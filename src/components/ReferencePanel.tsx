@@ -89,7 +89,7 @@ export function ReferencePanel({
   return (
     <aside
       aria-label="Reference"
-      className="fixed inset-y-0 right-0 z-50 w-full max-w-md animate-[reference-slide-in_0.25s_ease-out] overflow-y-auto border-l border-[var(--line)] bg-[var(--bg-main)] shadow-2xl"
+      className="fixed inset-y-0 right-0 z-50 w-full max-w-md animate-[reference-slide-in_0.25s_ease-out] no-scrollbar overflow-y-auto border-l border-[var(--line)] bg-[var(--bg-main)] shadow-2xl"
     >
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--line)] bg-[var(--bg-main)] px-4 py-4">
         <h2 className="font-semibold">Reference</h2>

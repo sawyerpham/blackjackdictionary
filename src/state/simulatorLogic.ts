@@ -93,7 +93,7 @@ export type SimAction =
   | { type: 'SET_BALANCE'; value: number }
   | { type: 'RESET_BALANCE' }
   | { type: 'CYCLE_PENETRATION' }
-  | { type: 'CYCLE_NPC_COUNT' }
+  | { type: 'ADJUST_NPC_COUNT'; delta: number }
   | { type: 'FORCE_SHUFFLE' }
   | { type: 'SET_DECKS'; decks: number };
 
@@ -561,9 +561,9 @@ export function simulatorReducer(state: SimState, action: SimAction): SimState {
       if (state.phase === 'player-turn') return state;
       return { ...state, penetrationIdx: (state.penetrationIdx + 1) % PENETRATION_OPTIONS.length };
 
-    case 'CYCLE_NPC_COUNT':
+    case 'ADJUST_NPC_COUNT':
       if (state.phase === 'player-turn') return state;
-      return { ...state, npcCount: (state.npcCount + 1) % (MAX_NPCS + 1) };
+      return { ...state, npcCount: Math.max(0, Math.min(MAX_NPCS, state.npcCount + action.delta)) };
 
     case 'FORCE_SHUFFLE':
       if (state.phase === 'player-turn') return state;

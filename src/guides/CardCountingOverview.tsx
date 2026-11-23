@@ -21,45 +21,45 @@ const SYSTEM_ROWS: SystemRow[] = [
 
 function SystemComparisonTable() {
   return (
-    <div className="mb-4 overflow-x-auto">
-      <table className="w-full min-w-[30rem] border-separate border-spacing-0.5 text-center text-sm">
+    <div className="mb-4">
+      <table className="w-full border-separate border-spacing-0.5 text-center text-xs sm:text-sm">
         <thead>
           <tr>
-            <th className="rounded bg-[var(--bg-third)] p-2 text-left font-semibold text-[var(--text-primary)]">
+            <th className="rounded bg-[var(--bg-third)] p-1 sm:p-2 text-left font-semibold text-[var(--text-primary)]">
               System
             </th>
-            <th className="w-16 rounded bg-[var(--bg-third)] p-2 font-semibold text-[var(--text-primary)]">Level</th>
-            <th className="w-24 rounded bg-[var(--bg-third)] p-2 font-semibold text-[var(--text-primary)]">
+            <th className="sm:w-16 rounded bg-[var(--bg-third)] p-1 sm:p-2 font-semibold text-[var(--text-primary)]">Level</th>
+            <th className="sm:w-24 rounded bg-[var(--bg-third)] p-1 sm:p-2 font-semibold text-[var(--text-primary)]">
               Balanced
             </th>
-            <th className="w-16 rounded bg-[var(--bg-third)] p-2 font-semibold text-[var(--text-primary)]">BC</th>
-            <th className="w-16 rounded bg-[var(--bg-third)] p-2 font-semibold text-[var(--text-primary)]">PE</th>
-            <th className="w-16 rounded bg-[var(--bg-third)] p-2 font-semibold text-[var(--text-primary)]">IC</th>
+            <th className="sm:w-16 rounded bg-[var(--bg-third)] p-1 sm:p-2 font-semibold text-[var(--text-primary)]">BC</th>
+            <th className="sm:w-16 rounded bg-[var(--bg-third)] p-1 sm:p-2 font-semibold text-[var(--text-primary)]">PE</th>
+            <th className="sm:w-16 rounded bg-[var(--bg-third)] p-1 sm:p-2 font-semibold text-[var(--text-primary)]">IC</th>
           </tr>
         </thead>
         <tbody>
           {SYSTEM_ROWS.map((r) => (
             <tr key={r.system}>
-              <td className="rounded bg-[var(--bg-second)] p-2 text-left font-semibold text-[var(--text-primary)]">
+              <td className="rounded bg-[var(--bg-second)] p-1 sm:p-2 text-left font-semibold text-[var(--text-primary)]">
                 {r.system}
               </td>
-              <td className="rounded bg-[var(--bg-second)] p-2">
+              <td className="rounded bg-[var(--bg-second)] p-1 sm:p-2">
                 <span className="inline-block w-8 rounded bg-[var(--bg-third)] px-2 py-1 text-xs font-semibold text-[var(--text-primary)]">
                   {r.level}
                 </span>
               </td>
-              <td className="rounded bg-[var(--bg-second)] p-2">
+              <td className="rounded bg-[var(--bg-second)] p-1 sm:p-2">
                 <span
-                  className={`inline-block rounded px-2.5 py-1 text-xs font-semibold ${
+                  className={`inline-block rounded px-1.5 py-1 sm:px-2.5 text-xs font-semibold ${
                     r.balanced ? 'bg-emerald-600 text-white' : 'bg-amber-400 text-gray-900'
                   }`}
                 >
                   {r.balanced ? 'Yes' : 'No'}
                 </span>
               </td>
-              <td className="rounded bg-[var(--bg-second)] p-2 text-[var(--text-primary)]">{r.bc}</td>
-              <td className="rounded bg-[var(--bg-second)] p-2 text-[var(--text-primary)]">{r.pe}</td>
-              <td className="rounded bg-[var(--bg-second)] p-2 text-[var(--text-primary)]">{r.ic}</td>
+              <td className="rounded bg-[var(--bg-second)] p-1 sm:p-2 text-[var(--text-primary)]">{r.bc}</td>
+              <td className="rounded bg-[var(--bg-second)] p-1 sm:p-2 text-[var(--text-primary)]">{r.pe}</td>
+              <td className="rounded bg-[var(--bg-second)] p-1 sm:p-2 text-[var(--text-primary)]">{r.ic}</td>
             </tr>
           ))}
         </tbody>

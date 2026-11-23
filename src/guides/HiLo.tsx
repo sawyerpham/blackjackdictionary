@@ -73,8 +73,8 @@ const FAB_4: DeviationRow[] = [
 
 function DeviationTable({ rows, actionHeader }: { rows: DeviationRow[]; actionHeader: string }) {
   return (
-    <div className="mb-4 overflow-x-auto">
-      <table className="w-full min-w-[28rem] border-separate border-spacing-0.5 text-center text-sm">
+    <div className="mb-4">
+      <table className="w-full border-separate border-spacing-0.5 text-center text-sm">
         <thead>
           <tr>
             <th className="w-16 rounded bg-[var(--bg-third)] p-2 font-semibold text-[var(--text-primary)]">#</th>
@@ -113,8 +113,8 @@ function BetSpreadTable() {
     { spread: '1 to 15 units', penetration: '5 decks', advantage: '~1.15%' },
   ];
   return (
-    <div className="mb-4 overflow-x-auto">
-      <table className="w-full min-w-[24rem] border-collapse text-sm">
+    <div className="mb-4">
+      <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-[var(--bg-third)] text-left">
             <th className="rounded-tl-lg p-3 font-semibold text-[var(--text-primary)]">Bet spread</th>

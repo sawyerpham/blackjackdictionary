@@ -19,7 +19,7 @@ function QuickSettings({ open, onClose }: { open: boolean; onClose: () => void }
       <div className="fixed inset-0 z-40 bg-black/50" onClick={onClose} aria-hidden />
       <aside
         aria-label="Quick settings"
-        className="fixed inset-y-0 right-0 z-50 w-full max-w-md animate-[reference-slide-in_0.2s_ease-out] overflow-y-auto border-l border-[var(--line)] bg-[var(--bg-main)]"
+        className="fixed inset-y-0 right-0 z-50 w-full max-w-md animate-[reference-slide-in_0.2s_ease-out] no-scrollbar overflow-y-auto border-l border-[var(--line)] bg-[var(--bg-main)]"
       >
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--line)] bg-[var(--bg-main)] px-5 py-4">
           <div>

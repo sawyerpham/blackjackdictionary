@@ -64,8 +64,8 @@ const TAG_TONE_STYLE: Record<TagTone, string> = {
 /** Card-tag table for counting systems, colored like the basic strategy chart cells. */
 export function TagValuesTable({ rows }: { rows: { cards: string; value: string; tone: TagTone }[] }) {
   return (
-    <div className="mb-4 overflow-x-auto">
-      <table className="w-full min-w-[20rem] border-separate border-spacing-0.5 text-center text-sm font-semibold">
+    <div className="mb-4">
+      <table className="w-full border-separate border-spacing-0.5 text-center text-sm font-semibold">
         <thead>
           <tr>
             <th className="rounded bg-[var(--bg-third)] p-2 text-[var(--text-primary)]">Cards</th>
