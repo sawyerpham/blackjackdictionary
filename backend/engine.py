@@ -5,9 +5,8 @@ evaluate(player, dealer_up, shoe, rules, splits_already_taken) -> EV of every le
 shoe: counts of cards still in the shoe, index 0 = Ace, 1..8 = 2..9, 9 = ten-value.
 Hand state is (t, aces): t counts every ace as 1; soft upgrades one ace to 11 when it fits.
 
-Known simplification: split hands each draw from the same starting shoe independently
-(no sequential depletion between split hands). Resplits, split aces, peek conditioning
-and double restrictions are exact.
+Stand, hit and double are exact for the given shoe. Split uses fixed_odds_ev: the real shoe's
+card odds, held fixed from there (exact split takes seconds for small pairs vs small upcards).
 """
 
 RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10']
@@ -152,27 +151,6 @@ def ev_double(h, shoe, ddf):
     return 2 * ev
 
 
-def ev_split_pair(pair_idx, shoe, rules, ddf, memo, splits_so_far):
-    aces = pair_idx == 0
-    total = sum(shoe)
-    ev = 0.0
-    for i in range(10):
-        if not shoe[i]:
-            continue
-        s2 = remove_card(shoe, i)
-        nh = add_rank(hand_of([RANKS[pair_idx]]), i)
-        if i == pair_idx and splits_so_far < rules['maxSplits'] and (not aces or rules['allowResplitAces']):
-            outcome = ev_split_pair(pair_idx, s2, rules, ddf, memo, splits_so_far + 1)
-        elif aces and not rules['allowDrawAfterSplitAces']:
-            outcome = -1.0 if nh[0] > 21 else ev_stand(best_total(nh), ddf(s2))
-        else:
-            outcome = ev_play(nh, s2, rules, ddf, memo)
-            if rules['doubleAfterSplit']:
-                outcome = max(outcome, ev_double(nh, s2, ddf))
-        ev += shoe[i] / total * outcome
-    return 2 * ev
-
-
 def evaluate(player, dealer_up, shoe, rules=VEGAS_6DECK, splits_already_taken=0):
     shoe = tuple(shoe)
     h = hand_of(player)
@@ -199,8 +177,9 @@ def evaluate(player, dealer_up, shoe, rules=VEGAS_6DECK, splits_already_taken=0)
     if two and rules['allowDoubleDown'] and is_double_allowed(h, rules['doubleDownRestriction']):
         ev['double'] = -p_bj + (1 - p_bj) * ev_double(h, shoe, acting)
     if pair and splits_already_taken < rules['maxSplits']:
-        ev['split'] = -p_bj + (1 - p_bj) * ev_split_pair(
-            RANK_INDEX[player[0]], shoe, rules, acting, {}, splits_already_taken + 1)
+        # Exact split EV recurses through every shoe state (~6s for 3,3 v 3); fixed odds take ms.
+        split_ev = fixed_odds_ev(player, dealer_up, shoe, rules, splits_already_taken)['split']
+        ev['split'] = -p_bj + (1 - p_bj) * split_ev
     if two and rules['lateSurrender']:
         # Late surrender comes after the peek: a dealer natural still takes the whole bet.
         ev['surrender'] = -p_bj + (1 - p_bj) * -0.5
@@ -209,9 +188,9 @@ def evaluate(player, dealer_up, shoe, rules=VEGAS_6DECK, splits_already_taken=0)
 
 
 # ---------------------------------------------------------------------------
-# Basic strategy chart. The exact engine needs minutes for a full chart, so this
-# removes the three dealt cards and then holds the card odds fixed (the standard
-# chart-generator approximation). Same rules model, milliseconds per chart.
+# Fixed-odds model: take the shoe as it is now, then hold the card odds fixed
+# (the standard chart-generator approximation). Same rules model, milliseconds.
+# Used for the whole basic strategy chart and for split EV in evaluate().
 # ---------------------------------------------------------------------------
 
 UPCARDS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'A']
@@ -223,16 +202,14 @@ CHART_ROWS = {
 }
 
 
-def _cell_ev(player, up, rules):
-    """EV per action, conditioned on no dealer natural when the dealer peeks."""
-    shoe = fresh_shoe(rules['decks'])
-    for c in player + [up]:
-        shoe[RANK_INDEX[c]] -= 1
+def fixed_odds_ev(player, up, shoe, rules, splits_taken=0):
+    """EV per action from `shoe` (cards still unseen), conditioned on no dealer natural when
+    the dealer peeks. `splits_taken` = splits already made on this hand's lineage."""
     n = sum(shoe)
     p = [c / n for c in shoe]
     ui = RANK_INDEX[up]
     bj_hole = 9 if ui == 0 else 0 if ui == 9 else -1
-    peeked = rules['dealerPeeks'] and bj_hole != -1
+    peeked = rules['dealerPeeks'] and bj_hole != -1 and p[bj_hole] < 1
 
     memo = {}
 
@@ -298,8 +275,8 @@ def _cell_ev(player, up, rules):
     ev = {'stand': stand(h), 'hit': hit(h)}
     if rules['allowDoubleDown'] and is_double_allowed(h, rules['doubleDownRestriction']):
         ev['double'] = double(h)
-    if player[0] == player[1] and rules['maxSplits'] > 0:
-        ev['split'] = split(RANK_INDEX[player[0]], 1)
+    if len(player) == 2 and player[0] == player[1] and splits_taken < rules['maxSplits']:
+        ev['split'] = split(RANK_INDEX[player[0]], splits_taken + 1)
     if rules['lateSurrender']:
         ev['surrender'] = -0.5
     return ev
@@ -316,9 +293,17 @@ def chart_code(ev):
     return {'stand': 'S', 'hit': 'H', 'split': 'P'}[best]
 
 
+def _dealt_shoe(rules, *cards):
+    shoe = fresh_shoe(rules['decks'])
+    for c in cards:
+        shoe[RANK_INDEX[c]] -= 1
+    return shoe
+
+
 def chart(rules):
     return {
-        kind: [{'hand': label, 'cells': [chart_code(_cell_ev([a, b], up, rules)) for up in UPCARDS]}
+        kind: [{'hand': label, 'cells': [chart_code(fixed_odds_ev([a, b], up, _dealt_shoe(rules, a, b, up), rules))
+                                          for up in UPCARDS]}
                for label, a, b in rows]
         for kind, rows in CHART_ROWS.items()
     }
