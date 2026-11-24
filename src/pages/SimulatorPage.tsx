@@ -770,8 +770,8 @@ export function SimulatorPage() {
   // Cheap legality (no EV math) so the action buttons never wait on the backend.
   const legalActions = activeHand ? availableActions(activeHand.cards, rules, activeHand.splitsSoFar) : [];
   // Cards are dealt on screen one at a time (Settings > Appearance); OS reduced motion turns it off.
-  const reduceMotion = useMemo(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false, []);
-  const animate = settings.animations && !reduceMotion;
+  // Reduce Motion doesn't turn dealing off: DealtCard swaps the fly-in for a fade instead.
+  const animate = settings.animations;
   const { isShown, settled } = useDealReveal(state, animate);
 
   const isAvailable = (action: EngineAction) =>

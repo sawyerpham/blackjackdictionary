@@ -82,10 +82,15 @@ export function PlayingCard({
   );
 }
 
+/** OS-level Reduce Motion (Windows: Animation effects off; macOS/iOS: Reduce motion on). */
+const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
 /**
  * Wraps a card so it flies in from the shoe's dealing end when it mounts, and flips (edge-on, then
  * face-up) whenever `faceUp` changes, as when the dealer turns over the hole card. With `animate`
  * off it renders the card as-is. The shoe marks itself with `data-shoe`.
+ *
+ * Under Reduce Motion (Apple HIG): no travel or flip, the card fades in where it lands instead.
  */
 export function DealtCard({ animate, faceUp = true, children }: { animate: boolean; faceUp?: boolean; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -94,7 +99,11 @@ export function DealtCard({ animate, faceUp = true, children }: { animate: boole
   useLayoutEffect(() => {
     const el = ref.current;
     const shoe = document.querySelector('[data-shoe]');
-    if (!animate || !el || !shoe || !el.animate) return;
+    if (!animate || !el || !el.animate) return;
+    if (prefersReducedMotion() || !shoe) {
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out' });
+      return;
+    }
     const a = el.getBoundingClientRect();
     const b = shoe.getBoundingClientRect();
     const dx = b.left + b.width * 0.15 - (a.left + a.width / 2);
@@ -114,7 +123,12 @@ export function DealtCard({ animate, faceUp = true, children }: { animate: boole
     if (wasFaceUp.current === faceUp) return;
     wasFaceUp.current = faceUp;
     if (animate && ref.current?.animate) {
-      ref.current.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: 260, easing: 'ease-out' });
+      ref.current.animate(
+        prefersReducedMotion()
+          ? [{ opacity: 0.2 }, { opacity: 1 }]
+          : [{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }],
+        { duration: 260, easing: 'ease-out' },
+      );
     }
   }, [faceUp, animate]);
 
