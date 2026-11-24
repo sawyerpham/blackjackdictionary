@@ -19,6 +19,7 @@ declare module 'react' {
       mtext: MathProps;
       mrow: MathProps;
       msub: MathProps;
+      msubsup: MathProps;
       mfrac: MathProps;
       munder: MathProps;
     }
