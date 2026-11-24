@@ -11,6 +11,7 @@ import {
   BET_STEP,
   DEFAULT_BALANCE,
   MAX_NPCS,
+  firstBaseSeats,
   PENETRATION_OPTIONS,
   handTotal,
   initialSimState,
@@ -19,7 +20,8 @@ import {
   type HandState,
   type NpcHandState,
 } from '../state/simulatorLogic';
-import { PlayingCard } from '../components/PlayingCard';
+import { DealtCard, PlayingCard } from '../components/PlayingCard';
+import { useDealReveal } from '../state/useDealReveal';
 import { ReferencePanel } from '../components/ReferencePanel';
 import { ProfitTracker } from '../components/ProfitTracker';
 import { countDisplay, getCountingSystem } from '../engine/countingSystems';
@@ -353,81 +355,208 @@ const OUTCOME_STYLE: Record<NonNullable<HandState['outcome']>, [string, string]>
   surrender: ['Surrender', 'bg-zinc-600 text-white'],
 };
 
-/** Side view of a card stack (shoe or discard tray), drawn to scale against a full shoe. */
-function CardStack({
-  label,
-  count,
-  full,
-  cut,
-  shoe = false,
-  deckScale,
-}: {
-  label: string;
-  count: number;
-  full: number;
-  /** Shoe only: share of the shoe dealt before the cut card (deck penetration). */
-  cut?: number;
-  shoe?: boolean;
-  /** Decks in a full shoe: draws a scale bar one deck (52 cards) long above the stack. */
-  deckScale?: number;
-}) {
-  const pct = Math.min(100, (count / full) * 100);
-  // Like a real shoe, the stack is pushed to the dealing end (the slanted front, left), so dealing
-  // shrinks it from the back. The cut card has a fixed (1 - penetration) of a full shoe behind it,
-  // so it travels toward the front with the stack; once it reaches the front, it's out.
-  const behindCut = cut === undefined ? 0 : (1 - cut) * 100;
-  const cutOut = cut !== undefined && pct <= behindCut;
-  const cutFromFront = Math.max(0, pct - behindCut);
+/** Point list for an SVG polygon. */
+const pts = (...p: [number, number][]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+
+/** Shared SVG patterns: card edges (side-on), the blue card back, and a soft table shadow. */
+function CardPatterns({ id, edgeAngle = 0 }: { id: string; edgeAngle?: number }) {
+  return (
+    <defs>
+      <pattern
+        id={`${id}-edges`}
+        width="1.6"
+        height="1.6"
+        patternUnits="userSpaceOnUse"
+        patternTransform={`rotate(${edgeAngle})`}
+      >
+        <rect width="1.6" height="1.6" fill="#d9dee7" />
+        <rect width="0.55" height="1.6" fill="#8d96a6" />
+      </pattern>
+      <pattern id={`${id}-back`} width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="3" height="3" fill="#2563eb" />
+        <rect width="0.8" height="3" fill="rgb(255 255 255 / 0.28)" />
+      </pattern>
+      <filter id={`${id}-shadow`} x="-20%" y="-50%" width="140%" height="200%">
+        <feGaussianBlur stdDeviation="2.2" />
+      </filter>
+    </defs>
+  );
+}
+
+/**
+ * Dealing shoe as a player sees it: a smoked-acrylic box, dealing end (slanted) on the left, cards
+ * standing on edge inside with the front card's back showing. Dealing shortens the block from the
+ * back; the red cut card keeps (1 - penetration) of a full shoe behind it, so it travels forward
+ * with the block and is "out" once it reaches the front.
+ */
+function ShoeView({ count, full, cut }: { count: number; full: number; cut: number }) {
+  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const frac = Math.min(1, count / full);
+  const behind = 1 - cut;
+  const cutOut = frac <= behind;
+  // Oblique projection: depth runs up-right by (DX, DY); cards lean with the slanted front.
+  const DX = 12;
+  const DY = -9;
+  const LEAN = 22; // horizontal run of the slant, bottom to top
+  const MAX_L = 108; // block length of a full shoe
+  const L = MAX_L * frac;
+  const c = Math.max(0, MAX_L * (frac - behind)); // cut card's distance from the front of the block
+  const by = 60; // block bottom
+  const ty = 27; // block top
+  const bx = 12; // block front, bottom corner
   return (
     <div
       role="img"
-      aria-label={`${label}: ${count} cards${cut !== undefined ? (cutOut ? ', cut card out, shuffle next hand' : '') : ''}`}
-      className="relative flex flex-col items-center gap-1"
+      aria-label={`Shoe: ${count} cards${cutOut ? ', cut card out, shuffle next hand' : ''}`}
+      className="flex flex-col items-center gap-0.5"
     >
-      {deckScale !== undefined && (
-        // Sits just above the tray without shifting it (keeps it level with the shoe). Same width and
-        // padding as the body, so the bar's % width matches one deck on the card track.
-        <div className="absolute bottom-full left-0 mb-1 w-20 px-1.5 sm:w-[8.75rem]" aria-hidden>
-          {/* Ruler across the whole tray: top rule, a tick hanging down at every deck boundary. */}
-          <div className="relative h-1.5 border-t border-white/35">
-            {Array.from({ length: deckScale + 1 }, (_, i) => (
-              <div
-                key={i}
-                className="absolute top-0 h-full w-px -translate-x-1/2 bg-white/35"
-                style={{ left: `${(i / deckScale) * 100}%` }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-      <div className={`relative w-20 p-1.5 sm:w-[8.75rem] ${shoe ? 'pl-4 sm:pl-5' : ''}`}>
-        {/* Body on its own layer so the shoe's slanted front doesn't clip the protruding cut card. */}
-        <div
-          aria-hidden
-          className={`absolute inset-0 ring-1 ring-white/10 ${
-            shoe
-              ? 'rounded-r-md bg-black/45 [clip-path:polygon(14%_0,100%_0,100%_100%,0_100%)]'
-              : 'rounded-md bg-white/[0.04]'
-          }`}
+      {/* Fixed-height slot, bottom-aligned, so the shoe and tray labels line up. */}
+      <div className="flex h-16 items-end sm:h-20">
+      <svg viewBox="0 0 170 72" className="w-[7.5rem] sm:w-32 lg:w-40" aria-hidden data-shoe>
+        <CardPatterns id={id} edgeAngle={34} />
+        <ellipse cx="88" cy="66" rx="78" ry="5" fill="rgb(0 0 0 / 0.55)" filter={`url(#${id}-shadow)`} />
+        {/* far wall, floor and back end, behind the cards */}
+        <polygon points={pts([22, 54], [164, 54], [164, 15], [44, 15])} fill="rgb(4 9 18 / 0.85)" />
+        <polygon points={pts([8, 63], [150, 63], [164, 54], [22, 54])} fill="rgb(4 9 18 / 0.9)" />
+        <polygon
+          points={pts([150, 63], [150, 24], [164, 15], [164, 54])}
+          fill="rgb(6 12 22 / 0.95)"
+          stroke="rgb(255 255 255 / 0.1)"
+          strokeWidth="0.6"
         />
-        <div className="relative flex h-9 justify-start sm:h-[2.8rem]">
-          <div
-            className="h-full rounded-[2px] bg-[repeating-linear-gradient(90deg,#f4f4f5_0_1.5px,#a1a1aa_1.5px_2.5px)] shadow-[0_1px_2px_rgb(0_0_0/0.5)] transition-[width] duration-300"
-            style={{ width: `${pct}%` }}
-          />
-          {cut !== undefined && (
-            // Cut card: a thin, muted red sliver among the card edges, deliberately low-key.
-            <div
-              title={cutOut ? 'Cut card is out: shuffle after this hand' : 'Cut card'}
-              className="absolute -top-0.5 -bottom-0.5 w-[2px] rounded-[1px] bg-red-500/75 transition-[left] duration-300"
-              style={{ left: `calc(${cutFromFront}% - 1px)` }}
+        {count > 0 && (
+          <g>
+            {/* tops of the cards */}
+            <polygon
+              points={pts([bx + LEAN, ty], [bx + LEAN + L, ty], [bx + LEAN + L + DX, ty + DY], [bx + LEAN + DX, ty + DY])}
+              fill={`url(#${id}-edges)`}
+              opacity="0.7"
             />
-          )}
-        </div>
+            {/* side of the block: card edges */}
+            <polygon
+              points={pts([bx, by], [bx + L, by], [bx + LEAN + L, ty], [bx + LEAN, ty])}
+              fill={`url(#${id}-edges)`}
+              opacity="0.9"
+            />
+            {/* front card: its back shows at the dealing end */}
+            <polygon
+              points={pts([bx, by], [bx + LEAN, ty], [bx + LEAN + DX, ty + DY], [bx + DX, by + DY])}
+              fill={`url(#${id}-back)`}
+              stroke="rgb(255 255 255 / 0.5)"
+              strokeWidth="0.5"
+            />
+            {/* cut card: red plastic standing among the cards, a hair taller */}
+            <polygon
+              points={pts([bx + c, by], [bx + LEAN + c + 1.3, ty - 2.5], [bx + LEAN + c + 2.6, ty - 2.5], [bx + c + 1.3, by])}
+              fill="rgb(220 38 38 / 0.8)"
+            />
+          </g>
+        )}
+        {/* smoked acrylic near wall and lid, see-through so the cards show */}
+        <polygon
+          points={pts([8, 63], [150, 63], [150, 24], [30, 24])}
+          fill="rgb(120 150 190 / 0.1)"
+          stroke="rgb(255 255 255 / 0.22)"
+          strokeWidth="0.7"
+        />
+        <polygon
+          points={pts([30, 24], [150, 24], [164, 15], [44, 15])}
+          fill="rgb(120 150 190 / 0.07)"
+          stroke="rgb(255 255 255 / 0.18)"
+          strokeWidth="0.6"
+        />
+        {/* dealing lip */}
+        <polygon
+          points={pts([4, 66], [24, 66], [36, 57], [16, 57])}
+          fill="rgb(10 18 32)"
+          stroke="rgb(255 255 255 / 0.15)"
+          strokeWidth="0.6"
+        />
+        <line x1="30" y1="24" x2="150" y2="24" stroke="rgb(255 255 255 / 0.35)" strokeWidth="0.8" />
+      </svg>
       </div>
-      <span className="font-mono text-xs text-white/45 tabular-nums">
-        {label} {count}
-      </span>
+      <span className="font-mono text-xs text-white/45 tabular-nums">Shoe {count}</span>
+    </div>
+  );
+}
+
+/**
+ * Discard holder as a player sees it: a clear acrylic box with face-down cards stacked flat, so the
+ * pile gets taller as hands are cleared. Marks up the front edge show each deck, like real holders.
+ */
+function DiscardTray({ count, full, decks }: { count: number; full: number; decks: number }) {
+  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const H_MAX = 46; // pile height of a full shoe
+  const h = H_MAX * Math.min(1, count / full);
+  const DX = 14;
+  const DY = -9;
+  const base = 70; // pile bottom, front
+  const x0 = 12;
+  const x1 = 84;
+  const top = base - h;
+  return (
+    <div role="img" aria-label={`Discards: ${count} cards`} className="flex flex-col items-center gap-0.5">
+      <div className="flex h-16 items-end sm:h-20">
+      <svg viewBox="0 0 112 80" className="w-[5.5rem] sm:w-28" aria-hidden>
+        <CardPatterns id={id} edgeAngle={90} />
+        <ellipse cx="58" cy="74" rx="50" ry="5" fill="rgb(0 0 0 / 0.55)" filter={`url(#${id}-shadow)`} />
+        {/* back wall, left wall and floor, behind the pile */}
+        <polygon
+          points={pts([26, 62], [102, 62], [102, 12], [26, 12])}
+          fill="rgb(120 150 190 / 0.05)"
+          stroke="rgb(255 255 255 / 0.12)"
+          strokeWidth="0.6"
+        />
+        <polygon
+          points={pts([10, 72], [26, 62], [26, 12], [10, 22])}
+          fill="rgb(120 150 190 / 0.04)"
+          stroke="rgb(255 255 255 / 0.12)"
+          strokeWidth="0.6"
+        />
+        <polygon points={pts([10, 72], [86, 72], [102, 62], [26, 62])} fill="rgb(4 9 18 / 0.7)" />
+        {count > 0 && (
+          <g>
+            {/* right side of the pile */}
+            <polygon
+              points={pts([x1, top], [x1 + DX, top + DY], [x1 + DX, base + DY], [x1, base])}
+              fill={`url(#${id}-edges)`}
+              opacity="0.65"
+            />
+            {/* front of the pile: stacked card edges */}
+            <rect x={x0} y={top} width={x1 - x0} height={h} fill={`url(#${id}-edges)`} opacity="0.9" />
+            {/* top card, face down */}
+            <polygon
+              points={pts([x0, top], [x1, top], [x1 + DX, top + DY], [x0 + DX, top + DY])}
+              fill={`url(#${id}-back)`}
+              stroke="rgb(255 255 255 / 0.5)"
+              strokeWidth="0.5"
+            />
+          </g>
+        )}
+        {/* clear front and right walls */}
+        <polygon
+          points={pts([10, 72], [86, 72], [86, 22], [10, 22])}
+          fill="rgb(120 150 190 / 0.07)"
+          stroke="rgb(255 255 255 / 0.25)"
+          strokeWidth="0.7"
+        />
+        <polygon
+          points={pts([86, 72], [102, 62], [102, 12], [86, 22])}
+          fill="rgb(120 150 190 / 0.05)"
+          stroke="rgb(255 255 255 / 0.2)"
+          strokeWidth="0.6"
+        />
+        <line x1="10" y1="22" x2="86" y2="22" stroke="rgb(255 255 255 / 0.35)" strokeWidth="0.8" />
+        {/* deck marks up the front edge */}
+        {Array.from({ length: decks + 1 }, (_, i) => {
+          const y = base - (H_MAX * i) / decks;
+          return (
+            <line key={i} x1="10" x2="15" y1={y} y2={y} stroke="rgb(255 255 255 / 0.4)" strokeWidth="0.6" />
+          );
+        })}
+      </svg>
+      </div>
+      <span className="font-mono text-xs text-white/45 tabular-nums">Discards {count}</span>
     </div>
   );
 }
@@ -472,13 +601,21 @@ function PlayerHand({
   seedPrefix,
   isActive,
   dimmed,
+  shown,
+  animate,
+  settled,
 }: {
   hand: HandState;
   seedPrefix: string;
   isActive: boolean;
   dimmed: boolean;
+  /** Whether card i has been dealt on screen yet. */
+  shown: (i: number) => boolean;
+  animate: boolean;
+  settled: boolean;
 }) {
-  const outcome = hand.outcome ? OUTCOME_STYLE[hand.outcome] : undefined;
+  const cards = hand.cards.filter((_, i) => shown(i));
+  const outcome = settled && hand.outcome ? OUTCOME_STYLE[hand.outcome] : undefined;
   return (
     <div
       className={`flex flex-col items-center gap-2 rounded-2xl px-3 pt-3 pb-2 transition-all ${
@@ -486,12 +623,14 @@ function PlayerHand({
       } ${dimmed ? 'opacity-55' : ''}`}
     >
       <Fan>
-        {hand.cards.map((c, i) => (
-          <PlayingCard key={i} rank={c} seed={`${seedPrefix}-${i}`} />
+        {cards.map((c, i) => (
+          <DealtCard key={`${seedPrefix}-${i}`} animate={animate}>
+            <PlayingCard rank={c} seed={`${seedPrefix}-${i}`} />
+          </DealtCard>
         ))}
       </Fan>
       <div className="flex items-center gap-1.5">
-        <ValuePill cards={hand.cards} />
+        <ValuePill cards={cards} />
         {outcome && (
           <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${outcome[1]}`}>{outcome[0]}</span>
         )}
@@ -503,22 +642,40 @@ function PlayerHand({
   );
 }
 
-function NpcSeat({ label, hands, seedPrefix }: { label: string; hands: NpcHandState[]; seedPrefix: string }) {
+function NpcSeat({
+  label,
+  hands,
+  seedPrefix,
+  shown,
+  animate,
+}: {
+  label: string;
+  hands: NpcHandState[];
+  seedPrefix: string;
+  /** Whether card j of hand i has been dealt on screen yet. */
+  shown: (i: number, j: number) => boolean;
+  animate: boolean;
+}) {
   return (
     <div className="flex min-w-0 flex-col items-center gap-1.5">
       {hands.map((hand, i) => {
-        const { total } = handTotal(hand.cards);
+        const cards = hand.cards.filter((_, j) => shown(i, j));
+        if (cards.length === 0) return null;
+        const { total } = handTotal(cards);
+        const surrendered = hand.surrendered && cards.length === hand.cards.length;
         return (
           <div key={i} className="flex flex-col items-center gap-1">
             <div className="flex [&>*:not(:first-child)]:-ml-4">
-              {hand.cards.map((c, j) => (
-                <PlayingCard key={j} size="sm" rank={c} seed={`${seedPrefix}-${i}-${j}`} />
+              {cards.map((c, j) => (
+                <DealtCard key={`${seedPrefix}-${i}-${j}`} animate={animate}>
+                  <PlayingCard size="sm" rank={c} seed={`${seedPrefix}-${i}-${j}`} />
+                </DealtCard>
               ))}
             </div>
             <span
-              className={`font-mono text-[10px] ${hand.surrendered || total > 21 ? 'text-rose-400' : 'text-white/60'}`}
+              className={`font-mono text-[10px] ${surrendered || total > 21 ? 'text-rose-400' : 'text-white/60'}`}
             >
-              {hand.surrendered ? 'Surr' : total > 21 ? 'Bust' : total}
+              {surrendered ? 'Surr' : total > 21 ? 'Bust' : total}
             </span>
           </div>
         );
@@ -603,7 +760,13 @@ export function SimulatorPage() {
 
   // Cheap legality (no EV math) so the action buttons never wait on the backend.
   const legalActions = activeHand ? availableActions(activeHand.cards, rules, activeHand.splitsSoFar) : [];
+  // Cards are dealt on screen one at a time (Settings > Appearance); OS reduced motion turns it off.
+  const reduceMotion = useMemo(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false, []);
+  const animate = settings.animations && !reduceMotion;
+  const { isShown, settled } = useDealReveal(state, animate);
+
   const isAvailable = (action: EngineAction) =>
+    settled &&
     !!activeHand &&
     legalActions.includes(action) &&
     (action !== 'split' || !(activeHand.isSplitAces && !rules.allowResplitAces));
@@ -613,7 +776,9 @@ export function SimulatorPage() {
     [settings.countingSystem, state],
   );
 
-  const canDeal = !playerTurn && state.balance >= state.currentBet;
+  const canAfford = state.balance >= state.currentBet;
+  // Wait for the last card to land before the next deal.
+  const canDeal = !playerTurn && canAfford && settled;
   const cardsLeft = state.shoe.reduce((a, b) => a + b, 0);
   const fullShoe = 52 * state.decks;
   const cardsOnTable =
@@ -626,7 +791,7 @@ export function SimulatorPage() {
   // Decision countdown + heat build-up. Restarts at every decision point
   // (any action replaces state.hands, so it doubles as the reset trigger).
   useEffect(() => {
-    if (!realisticMode || state.phase !== 'player-turn') {
+    if (!realisticMode || state.phase !== 'player-turn' || !settled) {
       decisionStartRef.current = null;
       return;
     }
@@ -640,7 +805,7 @@ export function SimulatorPage() {
       if (elapsed > decisionSeconds) setHeat((h) => Math.min(100, h + HEAT_PER_TICK));
     }, 100);
     return () => window.clearInterval(id);
-  }, [realisticMode, state.phase, state.activeHandIdx, state.hands, decisionSeconds]);
+  }, [realisticMode, state.phase, state.activeHandIdx, state.hands, decisionSeconds, settled]);
 
   // Record the hand's duration once it resolves.
   useEffect(() => {
@@ -680,7 +845,7 @@ export function SimulatorPage() {
   // Auto-deal the next hand after the clearing pause. The pause scales with
   // the hands the dealer has to sweep: the user's hand(s), every NPC hand, and splits.
   useEffect(() => {
-    if (!realisticMode || state.phase !== 'round-over') return;
+    if (!realisticMode || state.phase !== 'round-over' || !settled) return;
     if (state.balance < state.currentBet) return;
     const tableHands = state.hands.length + state.npcs.reduce((n, seat) => n + seat.length, 0);
     const effectiveClear = clearSeconds * Math.max(1, tableHands);
@@ -698,7 +863,7 @@ export function SimulatorPage() {
       dispatch({ type: 'DEAL', rules });
     }, 100);
     return () => window.clearInterval(id);
-  }, [realisticMode, state.phase, state.hands, state.npcs, state.balance, state.currentBet, clearSeconds, rules]);
+  }, [realisticMode, state.phase, state.hands, state.npcs, state.balance, state.currentBet, clearSeconds, rules, settled]);
 
   const handleAction = (action: EngineAction) => {
     if (!isAvailable(action)) return;
@@ -734,13 +899,19 @@ export function SimulatorPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const npcLeft = state.npcs.slice(Math.ceil(state.npcs.length / 2));
-  const npcRight = state.npcs.slice(0, Math.ceil(state.npcs.length / 2));
+  // The dealer deals from their left to their right, which on screen is right to left. Seat 1 (first
+  // base) is the far right, then the seats toward you, you, and the rest out to the far left.
+  const firstBase = firstBaseSeats(state.npcs.length);
+  const seatsRightOfYou = Array.from({ length: firstBase }, (_, i) => firstBase - 1 - i); // e.g. 3, 2, 1
+  const seatsLeftOfYou = Array.from({ length: state.npcs.length - firstBase }, (_, i) => state.npcs.length - 1 - i); // e.g. 5, 4
   const seatLabel = (i: number) => `Seat ${i + 1}`;
   // Too many seats + split hands for one row: give NPCs their own row above you (always the layout on phones).
   const seatUnits = state.npcs.length + state.hands.reduce((n, h) => n + 1 + h.cards.length / 2, 0);
   const crowded = seatUnits > 7;
   const r = state.round;
+  const dealerShown = state.dealerCards.filter((_, i) => isShown(`d-${i}`));
+  // The hole card stays face down until the dealer's turn reaches it on screen.
+  const holeDown = state.dealerHoleHidden || !isShown('d-flip');
 
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-3 py-6 sm:px-4 sm:py-8">
@@ -807,16 +978,10 @@ export function SimulatorPage() {
         {/* Phone: own row above the dealer so a long dealer hand can't run into them. sm+: table corners. */}
         <div className="mb-4 flex items-start justify-between pt-6 sm:contents">
           <div className="sm:absolute sm:top-8 sm:left-8">
-            <CardStack label="Discards" count={discards} full={fullShoe} deckScale={state.decks} />
+            <DiscardTray count={discards} full={fullShoe} decks={state.decks} />
           </div>
           <div className="sm:absolute sm:top-8 sm:right-8">
-            <CardStack
-              shoe
-              label="Shoe"
-              count={cardsLeft}
-              full={fullShoe}
-              cut={PENETRATION_OPTIONS[state.penetrationIdx].value}
-            />
+            <ShoeView count={cardsLeft} full={fullShoe} cut={PENETRATION_OPTIONS[state.penetrationIdx].value} />
           </div>
         </div>
 
@@ -824,19 +989,17 @@ export function SimulatorPage() {
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center gap-2">
             <span className="text-[11px] tracking-[0.2em] text-white/40 uppercase">Dealer</span>
-            <ValuePill cards={state.dealerCards} hideHole={state.dealerHoleHidden} />
+            <ValuePill cards={dealerShown} hideHole={holeDown} />
           </div>
           <div className="flex min-h-[5.5rem] items-center sm:min-h-28">
-            {state.dealerCards.length === 0 ? (
+            {dealerShown.length === 0 ? (
               <div className="h-[5.5rem] w-[3.9rem] rounded-lg border border-dashed border-white/15 sm:h-28 sm:w-20" />
             ) : (
               <Fan>
-                {state.dealerCards.map((c, i) => (
-                  <PlayingCard
-                    key={i}
-                    rank={state.dealerHoleHidden && i === 1 ? undefined : c}
-                    seed={`${r}-d-${i}`}
-                  />
+                {dealerShown.map((c, i) => (
+                  <DealtCard key={`${r}-d-${i}`} animate={animate} faceUp={!(i === 1 && holeDown)}>
+                    <PlayingCard rank={i === 1 && holeDown ? undefined : c} seed={`${r}-d-${i}`} />
+                  </DealtCard>
                 ))}
               </Fan>
             )}
@@ -850,9 +1013,9 @@ export function SimulatorPage() {
           />
           <p
             aria-live="polite"
-            className={`mx-auto mt-1 h-6 text-sm font-medium transition-opacity ${state.message ? 'text-white/85' : 'opacity-0'}`}
+            className={`mx-auto mt-1 h-6 text-sm font-medium transition-opacity ${settled && state.message ? 'text-white/85' : 'opacity-0'}`}
           >
-            {state.message}
+            {settled && state.message}
           </p>
         </div>
 
@@ -861,12 +1024,18 @@ export function SimulatorPage() {
         <div
           className={`flex flex-wrap items-end justify-center gap-x-3 gap-y-5 sm:gap-x-6 ${crowded ? '' : 'sm:flex-nowrap'}`}
         >
-          {npcLeft.map((seat, k) => {
-            const i = Math.ceil(state.npcs.length / 2) + k;
-            return <NpcSeat key={i} label={seatLabel(i)} hands={seat} seedPrefix={`${r}-n${i}`} />;
-          })}
+          {seatsLeftOfYou.map((i) => (
+            <NpcSeat
+              key={i}
+              label={seatLabel(i)}
+              hands={state.npcs[i]}
+              seedPrefix={`${r}-n${i}`}
+              shown={(h, j) => isShown(`n${i}-${h}-${j}`)}
+              animate={animate}
+            />
+          ))}
           <div
-            className={`order-last flex w-full flex-wrap items-end justify-center gap-1 sm:gap-3 ${
+            className={`order-last flex w-full flex-row-reverse flex-wrap items-end justify-center gap-1 sm:gap-3 ${
               crowded ? '' : 'sm:order-none sm:w-auto'
             }`}
           >
@@ -883,14 +1052,24 @@ export function SimulatorPage() {
                   key={i}
                   hand={hand}
                   seedPrefix={`${r}-p${i}`}
-                  isActive={playerTurn && i === state.activeHandIdx}
+                  isActive={playerTurn && settled && i === state.activeHandIdx}
                   dimmed={playerTurn && state.hands.length > 1 && i !== state.activeHandIdx}
+                  shown={(j) => isShown(`p${i}-${j}`)}
+                  animate={animate}
+                  settled={settled}
                 />
               ))
             )}
           </div>
-          {npcRight.map((seat, i) => (
-            <NpcSeat key={i} label={seatLabel(i)} hands={seat} seedPrefix={`${r}-n${i}`} />
+          {seatsRightOfYou.map((i) => (
+            <NpcSeat
+              key={i}
+              label={seatLabel(i)}
+              hands={state.npcs[i]}
+              seedPrefix={`${r}-n${i}`}
+              shown={(h, j) => isShown(`n${i}-${h}-${j}`)}
+              animate={animate}
+            />
           ))}
         </div>
       </section>
@@ -906,7 +1085,7 @@ export function SimulatorPage() {
         >
           Optimal:{' '}
           <span className={`font-medium text-[var(--accent-soft)] transition-all ${optimalRevealed ? '' : 'blur-sm'}`}>
-            {playerTurn ? (evaluation ? ACTION_LABELS[evaluation.best] : '…') : '—'}
+            {playerTurn ? (settled && evaluation ? ACTION_LABELS[evaluation.best] : '…') : '—'}
           </span>
         </button>
         <span className="font-mono text-xs text-[var(--text-muted)]">{countLine}</span>
@@ -947,7 +1126,7 @@ export function SimulatorPage() {
           </button>
         )}
       </div>
-      {!canDeal && !playerTurn && (
+      {!canAfford && !playerTurn && (
         <p className="mt-2 text-center text-xs text-rose-400">Not enough balance for this bet. Lower it or reset.</p>
       )}
 

@@ -1,4 +1,4 @@
-import { Group, PresetPicker, Row, RuleGroups, Segmented } from '../components/RuleControls';
+import { Group, PresetPicker, Row, RuleGroups, Segmented, Toggle } from '../components/RuleControls';
 import { COUNTING_SYSTEMS } from '../engine/countingSystems';
 import { useSettingsStore } from '../state/settingsStore';
 
@@ -66,6 +66,12 @@ export function SettingsPage() {
               options={[1, 2, 3, 4, 5].map((n) => ({ value: n, label: `${n}s` }))}
               onChange={(v) => update({ realisticHandClearSeconds: v })}
             />
+          </Row>
+        </Group>
+
+        <Group title="Appearance">
+          <Row title="Animations" hint="Cards are dealt from the shoe one at a time">
+            <Toggle label="Animations" checked={settings.animations} onChange={(v) => update({ animations: v })} />
           </Row>
         </Group>
 

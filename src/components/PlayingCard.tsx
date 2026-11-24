@@ -1,3 +1,5 @@
+import { useEffect, useLayoutEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
 import type { Rank } from '../engine/blackjack-engine';
 
 const SUITS = ['♠', '♥', '♦', '♣'] as const;
@@ -34,7 +36,7 @@ export function PlayingCard({
     return (
       <div
         aria-label="Face-down card"
-        className={`${box} ${className} shrink-0 animate-[card-in_0.25s_ease-out] border border-white/20 bg-[var(--accent-strong)] p-1 shadow-lg shadow-black/40`}
+        className={`${box} ${className} shrink-0 border border-white/20 bg-[var(--accent-strong)] p-1 shadow-lg shadow-black/40`}
       >
         <div className="h-full w-full rounded-[inherit] border border-white/25 bg-[repeating-linear-gradient(45deg,rgb(255_255_255/0.12)_0_2px,transparent_2px_7px)]" />
       </div>
@@ -51,7 +53,7 @@ export function PlayingCard({
     return (
       <div
         aria-label={`${label}${suit}`}
-        className={`${box} ${className} ${ink} relative shrink-0 animate-[card-in_0.25s_ease-out] bg-white leading-none font-semibold shadow-md shadow-black/40`}
+        className={`${box} ${className} ${ink} relative shrink-0 bg-white leading-none font-semibold shadow-md shadow-black/40`}
       >
         {/* Corner index, so it stays readable when the next card overlaps the right side. */}
         <div className="absolute top-1 left-1 flex flex-col items-center">
@@ -65,7 +67,7 @@ export function PlayingCard({
   return (
     <div
       aria-label={`${label}${suit}`}
-      className={`${box} ${className} ${ink} relative shrink-0 animate-[card-in_0.25s_ease-out] bg-white font-semibold shadow-lg shadow-black/40 select-none`}
+      className={`${box} ${className} ${ink} relative shrink-0 bg-white font-semibold shadow-lg shadow-black/40 select-none`}
     >
       <div className="absolute top-1 left-1.5 flex flex-col items-center leading-none">
         <span className="text-sm sm:text-base">{label}</span>
@@ -76,6 +78,49 @@ export function PlayingCard({
         <span className="text-sm sm:text-base">{label}</span>
         <span className="text-xs sm:text-sm">{suit}</span>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Wraps a card so it flies in from the shoe's dealing end when it mounts, and flips (edge-on, then
+ * face-up) whenever `faceUp` changes, as when the dealer turns over the hole card. With `animate`
+ * off it renders the card as-is. The shoe marks itself with `data-shoe`.
+ */
+export function DealtCard({ animate, faceUp = true, children }: { animate: boolean; faceUp?: boolean; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const wasFaceUp = useRef(faceUp);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const shoe = document.querySelector('[data-shoe]');
+    if (!animate || !el || !shoe || !el.animate) return;
+    const a = el.getBoundingClientRect();
+    const b = shoe.getBoundingClientRect();
+    const dx = b.left + b.width * 0.15 - (a.left + a.width / 2);
+    const dy = b.top + b.height * 0.6 - (a.top + a.height / 2);
+    el.animate(
+      [
+        { transform: `translate(${dx}px, ${dy}px) rotate(-35deg) scale(0.3)`, opacity: 0.4 },
+        { transform: 'none', opacity: 1 },
+      ],
+      { duration: 380, easing: 'cubic-bezier(0.2, 0.75, 0.25, 1)' },
+    );
+    // Mount only: a card is dealt once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (wasFaceUp.current === faceUp) return;
+    wasFaceUp.current = faceUp;
+    if (animate && ref.current?.animate) {
+      ref.current.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: 260, easing: 'ease-out' });
+    }
+  }, [faceUp, animate]);
+
+  return (
+    <div ref={ref} className="shrink-0">
+      {children}
     </div>
   );
 }

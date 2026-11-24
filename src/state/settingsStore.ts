@@ -27,6 +27,8 @@ export interface GameSettings {
   realisticHandClearSeconds: number;
   /** Realistic mode: decision countdown length in seconds; expiring carries no penalty. */
   realisticDecisionSeconds: number;
+  /** Deal cards from the shoe one at a time (off = everything appears instantly). */
+  animations: boolean;
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -45,6 +47,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   countingSystem: DEFAULT_COUNTING_SYSTEM,
   realisticHandClearSeconds: 2,
   realisticDecisionSeconds: 8,
+  animations: true,
 };
 
 export interface Preset {
@@ -148,7 +151,11 @@ export const useSettingsStore = create<SettingsStore>()(
     (set) => ({
       settings: DEFAULT_SETTINGS,
       update: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
-      resetToDefaults: () => set((s) => ({ settings: { ...DEFAULT_SETTINGS, countingSystem: s.settings.countingSystem } })),
+      resetToDefaults: () =>
+        set((s) => ({
+          // Rules only: keep the counting system and appearance choices.
+          settings: { ...DEFAULT_SETTINGS, countingSystem: s.settings.countingSystem, animations: s.settings.animations },
+        })),
     }),
     {
       name: 'blackjack-settings',
