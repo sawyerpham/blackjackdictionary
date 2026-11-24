@@ -75,7 +75,10 @@ export function useDealReveal(state: SimState, enabled: boolean) {
     npcHandCounts: [] as number[],
   });
   if (seq.current.round !== state.round) {
+    const mounting = seq.current.round === -1;
     seq.current = { round: state.round, order: new Map(), next: 0, handCount: 0, activeHand: 0, npcHandCounts: [] };
+    // Coming back to a hand in progress: whatever is already on the table was dealt before.
+    if (mounting) for (const id of slotIds(state)) seq.current.order.set(id, -1);
   }
   const cur = seq.current;
   const { order } = cur;

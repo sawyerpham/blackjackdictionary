@@ -19,6 +19,7 @@ import {
   visibleShoe,
   type HandState,
   type NpcHandState,
+  type SimState,
 } from '../state/simulatorLogic';
 import { DealtCard, PlayingCard } from '../components/PlayingCard';
 import { useDealReveal } from '../state/useDealReveal';
@@ -27,6 +28,9 @@ import { ProfitTracker } from '../components/ProfitTracker';
 import { countDisplay, getCountingSystem } from '../engine/countingSystems';
 
 const BALANCE_KEY = 'blackjack-balance';
+
+/** The table survives switching tabs: the page unmounts, this doesn't. (A full reload still starts fresh.) */
+let savedTable: SimState | undefined;
 const PROFIT_KEY = 'blackjack-profit';
 /** Rounds kept for the profit chart. */
 const MAX_TRACKED_ROUNDS = 5000;
@@ -690,9 +694,13 @@ export function SimulatorPage() {
   const rules = useMemo(() => toEngineRules(settings), [settings]);
 
   const [state, dispatch] = useReducer(simulatorReducer, undefined, () => {
+    if (savedTable) return savedTable;
     const stored = loadBalance();
     return initialSimState(settings.decks, stored.balance, stored.defaultBalance);
   });
+  useEffect(() => {
+    savedTable = state;
+  }, [state]);
 
   // Shared across all hands so split hands inherit the current blur state.
   const [optimalRevealed, setOptimalRevealed] = useState(false);
@@ -706,7 +714,7 @@ export function SimulatorPage() {
   const [autoDealRemaining, setAutoDealRemaining] = useState(0);
   const [pacing, setPacing] = useState<PacingStats>(EMPTY_PACING);
   const [profitRounds, setProfitRounds] = useState<number[]>(loadProfit);
-  const recordedRoundRef = useRef(0);
+  const recordedRoundRef = useRef(savedTable?.phase === 'round-over' ? savedTable.round : 0);
   const decisionStartRef = useRef<number | null>(null);
   const handStartRef = useRef<number | null>(null);
   const decisionSeconds = settings.realisticDecisionSeconds;
