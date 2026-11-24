@@ -243,14 +243,27 @@ function playNpcSeat(dealt: Rank[], dealerUp: Rank, shoe: Shoe, rules: Rules): [
   return [finished, shoe];
 }
 
+/**
+ * Seats on the dealer's left ("first base", shown to the user's right) act before the user;
+ * the rest act after. Seat i < firstBaseSeats(n) is on the first-base side.
+ */
+export const firstBaseSeats = (npcCount: number) => Math.ceil(npcCount / 2);
+
+/** Plays NPC seats [from, to) in seat order; other seats are returned untouched. */
 function playAllNpcs(
   npcs: NpcHandState[][],
   dealerUp: Rank,
   shoe: Shoe,
   rules: Rules,
+  from = 0,
+  to = npcs.length,
 ): [NpcHandState[][], Shoe] {
   const played: NpcHandState[][] = [];
-  for (const seat of npcs) {
+  for (const [i, seat] of npcs.entries()) {
+    if (i < from || i >= to) {
+      played.push(seat);
+      continue;
+    }
     let hands: NpcHandState[];
     [hands, shoe] = playNpcSeat(seat[0].cards, dealerUp, shoe, rules);
     played.push(hands);
@@ -280,9 +293,9 @@ function playDealerAndSettle(state: SimState, rules: Rules): SimState {
   let dealerCards = state.dealerCards;
   let npcs = state.npcs;
 
-  // NPC seats (dealt ahead of the user) finish their hands before the dealer plays.
+  // Seats after the user (third-base side) play now; first-base seats already played after the deal.
   if (npcs.length > 0) {
-    [npcs, shoe] = playAllNpcs(npcs, dealerCards[0], shoe, rules);
+    [npcs, shoe] = playAllNpcs(npcs, dealerCards[0], shoe, rules, firstBaseSeats(npcs.length));
   }
 
   const anyLive =
@@ -418,6 +431,10 @@ export function simulatorReducer(state: SimState, action: SimAction): SimState {
         hand = { ...hand, done: false };
         phase = 'player-turn';
         dealerHoleHidden = true;
+        // First-base seats act before the user, as at a real table.
+        if (npcs.length > 0) {
+          [npcs, shoe] = playAllNpcs(npcs, d1, shoe, action.rules, 0, firstBaseSeats(npcs.length));
+        }
       }
 
       return {
