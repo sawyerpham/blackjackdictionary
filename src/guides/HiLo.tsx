@@ -127,7 +127,7 @@ function BetSpreadTable() {
             <tr key={r.spread} className="border-b border-white/10">
               <td className="p-3 font-medium text-[var(--text-primary)]">{r.spread}</td>
               <td className="p-3 text-[var(--text-muted)]">{r.penetration}</td>
-              <td className="p-3 font-medium text-[var(--accent-soft)]">{r.advantage}</td>
+              <td className="p-3 font-medium text-[var(--text-primary)] tabular-nums">{r.advantage}</td>
             </tr>
           ))}
         </tbody>

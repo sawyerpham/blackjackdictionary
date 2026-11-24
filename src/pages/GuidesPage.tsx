@@ -49,7 +49,7 @@ export function GuidesPage() {
       <div className="mx-auto flex max-w-6xl items-start gap-8">
         {/* Left sidebar: guide list */}
         <aside className="sticky top-8 hidden w-52 shrink-0 lg:block">
-          <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+          <p className="mb-3 px-3 text-footnote font-semibold text-[var(--text-muted)]">
             Guides
           </p>
           <nav className="space-y-1">
@@ -81,7 +81,7 @@ export function GuidesPage() {
           </div>
 
           <article className="rounded-lg bg-[var(--bg-second)] p-8">
-            <h1 className="mb-2 text-3xl font-bold text-[var(--accent)]">{guide.title}</h1>
+            <h1 className="text-large-title mb-2">{guide.title}</h1>
             <p className="mb-8 text-[var(--text-muted)]">{guide.description}</p>
             <guide.Content />
           </article>
@@ -89,7 +89,7 @@ export function GuidesPage() {
 
         {/* Right sidebar: on-this-page outline */}
         <aside className="sticky top-8 hidden w-52 shrink-0 xl:block">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+          <p className="mb-3 text-footnote font-semibold text-[var(--text-muted)]">
             On this page
           </p>
           <nav className="space-y-1 border-l border-white/10">

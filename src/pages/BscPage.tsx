@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Rules } from '../engine/blackjack-engine';
 import { Legend, StrategyTable, useStrategyChart } from '../components/StrategyChart';
-import { PresetPicker, RuleGroups, rulesSummary } from '../components/RuleControls';
+import { ActionRow, PresetPicker, RuleGroups, SectionHeader, rulesSummary } from '../components/RuleControls';
 import { toEngineRules, useSettingsStore } from '../state/settingsStore';
 
 /** POST /api/house-edge: base game, each rule's effect (in house-edge %), and the total. */
@@ -49,7 +49,7 @@ function EdgeBreakdownPanel({ data, loading }: { data?: EdgeBreakdown; loading: 
     <section
       id="house-edge"
       aria-label="House edge breakdown"
-      className={`scroll-mt-20 rounded-xl border border-[var(--line)] bg-[var(--bg-second)] p-3 transition-opacity sm:p-5 ${
+      className={`scroll-mt-20 rounded-[12px] bg-[var(--bg-second)] p-3 transition-opacity sm:p-5 ${
         loading ? 'opacity-60' : ''
       }`}
     >
@@ -66,7 +66,7 @@ function EdgeBreakdownPanel({ data, loading }: { data?: EdgeBreakdown; loading: 
                   6 decks · S17 · 3:2 · peek · double any · DAS · no surrender
                 </span>
               </td>
-              <td className="py-2 text-right font-mono tabular-nums">{pct(data.base)}</td>
+              <td className="py-2 text-right tabular-nums">{pct(data.base)}</td>
             </tr>
             {data.factors.map((f) => (
               <tr key={f.factor}>
@@ -75,7 +75,7 @@ function EdgeBreakdownPanel({ data, loading }: { data?: EdgeBreakdown; loading: 
                   {f.setting}
                 </td>
                 <td
-                  className={`py-2 text-right font-mono tabular-nums ${
+                  className={`py-2 text-right tabular-nums ${
                     Math.abs(f.delta) < 0.005
                       ? 'text-[var(--text-muted)]'
                       : f.delta > 0
@@ -92,7 +92,7 @@ function EdgeBreakdownPanel({ data, loading }: { data?: EdgeBreakdown; loading: 
                 {playerEdge ? 'Player edge' : 'House edge'}
               </td>
               <td
-                className={`pt-3 text-right font-mono text-base font-semibold tabular-nums ${
+                className={`pt-3 text-right tabular-nums text-base font-semibold ${
                   playerEdge ? 'text-emerald-400' : ''
                 }`}
               >
@@ -111,9 +111,9 @@ function HouseEdge({ edge, loading, compact = false }: { edge?: number; loading:
   const player = edge !== undefined && edge < 0;
   return (
     <div className={`text-right transition-opacity ${loading ? 'opacity-50' : ''}`} aria-live="polite">
-      <p className="text-[11px] tracking-wide text-[var(--text-muted)] uppercase">{player ? 'Player edge' : 'House edge'}</p>
+      <p className="text-caption text-[var(--text-muted)]">{player ? 'Player edge' : 'House edge'}</p>
       <p
-        className={`font-mono font-semibold tabular-nums ${compact ? 'text-lg' : 'text-2xl'} ${
+        className={`tabular-nums font-semibold ${compact ? 'text-lg' : 'text-2xl'} ${
           player ? 'text-emerald-400' : 'text-[var(--text-primary)]'
         }`}
       >
@@ -149,36 +149,28 @@ function QuickSettings({
       <div className="fixed inset-0 z-40 bg-black/50" onClick={onClose} aria-hidden />
       <aside
         aria-label="Quick settings"
-        className="fixed inset-y-0 right-0 z-50 w-full max-w-md animate-[reference-slide-in_0.2s_ease-out] no-scrollbar overflow-y-auto border-l border-[var(--line)] bg-[var(--bg-main)]"
+        className="fixed inset-y-0 right-0 z-50 w-full max-w-md animate-[reference-slide-in_0.25s_cubic-bezier(0.32,0.72,0,1)] no-scrollbar overflow-y-auto bg-[var(--bg-main)] shadow-2xl"
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--line)] bg-[var(--bg-main)] px-5 py-4">
-          <div>
-            <h2 className="font-semibold">Quick settings</h2>
-          </div>
-          <div className="ml-auto pr-4">
+        <div className="sticky top-0 z-10 flex min-h-14 items-center gap-3 border-b border-[var(--line)] bg-[rgb(28_28_30/0.8)] px-4 backdrop-blur-xl backdrop-saturate-150">
+          <h2 className="text-headline">Quick Settings</h2>
+          <div className="ml-auto">
             <HouseEdge compact edge={edge} loading={loading} />
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-[var(--line)] px-3 py-1.5 text-sm hover:border-white/20"
+            className="min-h-11 px-2 text-[17px] font-semibold text-[var(--accent)] active:opacity-50"
           >
             Done
           </button>
         </div>
-        <div className="space-y-6 px-5 py-6">
+        <div className="space-y-8 px-4 py-6">
           <section>
-            <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">Presets</h3>
-            <PresetPicker compact />
+            <SectionHeader>Presets</SectionHeader>
+            <PresetPicker />
           </section>
           <RuleGroups />
-          <button
-            type="button"
-            onClick={reset}
-            className="text-sm text-[var(--text-muted)] underline-offset-4 hover:text-[var(--text-primary)] hover:underline"
-          >
-            Reset rules to defaults
-          </button>
+          <ActionRow onClick={reset}>Reset Rules</ActionRow>
         </div>
       </aside>
     </>
@@ -187,7 +179,7 @@ function QuickSettings({
 
 function ChartSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-[var(--line)] bg-[var(--bg-second)] p-3 sm:p-5">
+    <section className="rounded-[12px] bg-[var(--bg-second)] p-3 sm:p-5">
       <h2 className="mb-3 text-sm font-medium text-[var(--text-muted)]">{title}</h2>
       {children}
     </section>
@@ -211,9 +203,9 @@ export function BscPage() {
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:py-12">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Basic Strategy Chart</h1>
+          <h1 className="text-large-title">Basic Strategy Chart</h1>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[var(--text-muted)]">
-            <span className="font-mono text-[var(--text-primary)]">{rulesSummary(settings)}</span>
+            <span className="tabular-nums text-[var(--text-primary)]">{rulesSummary(settings)}</span>
             {loading && <span className="text-[var(--accent-soft)]">Updating…</span>}
             {error && <span className="text-rose-400">Couldn't reach the server, showing the standard chart</span>}
           </p>
@@ -223,7 +215,7 @@ export function BscPage() {
           <button
             type="button"
             onClick={() => setQuickOpen(true)}
-            className="rounded-lg bg-[var(--accent-strong)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--accent)]"
+            className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:brightness-110"
           >
             Quick settings
           </button>

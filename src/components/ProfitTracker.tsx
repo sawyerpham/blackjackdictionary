@@ -49,12 +49,12 @@ export function ProfitTracker({ rounds, onReset }: { rounds: number[]; onReset: 
   const tipLeft = hover === null ? 0 : (x(hover) / W) * 100;
 
   return (
-    <section aria-label="Profit tracker" className="mt-6 rounded-xl border border-[var(--line)] bg-[var(--bg-second)] p-4 sm:p-5">
+    <section aria-label="Profit tracker" className="mt-6 rounded-[12px] bg-[var(--bg-second)] p-4 sm:p-5">
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-[11px] tracking-wide text-[var(--text-muted)] uppercase">Session profit</h2>
+          <h2 className="text-caption text-[var(--text-muted)]">Session profit</h2>
           <p
-            className={`font-mono text-3xl font-semibold tabular-nums ${
+            className={`tabular-nums text-3xl font-semibold ${
               net > 0 ? 'text-emerald-400' : net < 0 ? 'text-rose-400' : ''
             }`}
           >
@@ -65,19 +65,19 @@ export function ProfitTracker({ rounds, onReset }: { rounds: number[]; onReset: 
           type="button"
           onClick={onReset}
           disabled={!rounds.length}
-          className="rounded-md border border-[var(--line)] px-3 py-1.5 text-sm text-[var(--text-muted)] hover:border-white/20 hover:text-[var(--text-primary)] disabled:opacity-40"
+          className="min-h-11 px-2 text-[15px] text-[var(--accent)] active:opacity-50 disabled:text-[var(--text-muted)] disabled:opacity-60"
         >
           Reset tracker
         </button>
       </div>
 
       {rounds.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-[var(--line)] py-10 text-center text-sm text-[var(--text-muted)]">
+        <p className="py-10 text-center text-[15px] text-[var(--text-muted)]">
           Play a hand to start tracking profit.
         </p>
       ) : (
         <div className="relative">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex flex-col justify-between py-1 font-mono text-[10px] text-[var(--text-muted)] tabular-nums">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex flex-col justify-between py-1 tabular-nums text-[10px] text-[var(--text-muted)]">
             <span>{money(max, true)}</span>
             <span>{money(min, true)}</span>
           </div>
@@ -123,9 +123,9 @@ export function ProfitTracker({ rounds, onReset }: { rounds: number[]; onReset: 
                 style={{ left: `clamp(4rem, calc(3.5rem + (100% - 3.5rem) * ${tipLeft / 100}), calc(100% - 4rem))` }}
               >
                 <span className="text-[var(--text-muted)]">{hover === 0 ? 'Start' : `Round ${hover}`}</span>{' '}
-                <span className="font-mono font-semibold tabular-nums">{money(hv, true)}</span>
+                <span className="tabular-nums font-semibold">{money(hv, true)}</span>
                 {hover > 0 && (
-                  <span className="ml-1 font-mono text-[var(--text-muted)] tabular-nums">
+                  <span className="ml-1 tabular-nums text-[var(--text-muted)]">
                     ({money(rounds[hover - 1], true)})
                   </span>
                 )}
@@ -135,11 +135,11 @@ export function ProfitTracker({ rounds, onReset }: { rounds: number[]; onReset: 
         </div>
       )}
 
-      <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-[var(--line)] sm:grid-cols-3 lg:grid-cols-6">
+      <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[10px] bg-[var(--line)] sm:grid-cols-3 lg:grid-cols-6">
         {stats.map(([label, value]) => (
           <div key={label} className="bg-[var(--bg-second)] p-3">
-            <dt className="text-[11px] tracking-wide text-[var(--text-muted)] uppercase">{label}</dt>
-            <dd className="mt-0.5 font-mono text-base font-semibold tabular-nums">{value}</dd>
+            <dt className="text-caption text-[var(--text-muted)]">{label}</dt>
+            <dd className="mt-0.5 tabular-nums text-base font-semibold">{value}</dd>
           </div>
         ))}
       </dl>
@@ -147,7 +147,7 @@ export function ProfitTracker({ rounds, onReset }: { rounds: number[]; onReset: 
       {rounds.length > 0 && (
         <details className="mt-3 text-sm text-[var(--text-muted)]">
           <summary className="cursor-pointer select-none hover:text-[var(--text-primary)]">View last 20 rounds as a table</summary>
-          <table className="mt-2 w-full max-w-sm font-mono text-xs tabular-nums">
+          <table className="mt-2 w-full max-w-sm tabular-nums text-xs">
             <thead>
               <tr className="text-left">
                 <th className="py-1 font-medium">Round</th>

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 function Section({ n, title, children }: { n: number; title: string; children: ReactNode }) {
   return (
     <section className="relative border-l border-[var(--line)] pb-8 pl-8 last:pb-0">
-      <span className="absolute top-0 -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--bg-third)] font-mono text-xs text-[var(--accent-soft)] ring-1 ring-[var(--line)]">
+      <span className="absolute top-0 -left-3 flex h-6 w-6 items-center justify-center rounded-full bg-[var(--bg-third)] tabular-nums text-xs text-[var(--accent-soft)] ring-1 ring-[var(--line)]">
         {n}
       </span>
       <h2 className="mb-2 font-medium">{title}</h2>
@@ -68,7 +68,7 @@ const hPlusI = (
 export function AboutPage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-8 sm:py-12">
-      <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">How the math works</h1>
+      <h1 className="text-large-title">How the math works</h1>
       <p className="mt-2 mb-10 text-[var(--text-muted)]">
         Each recommendation is the action with the highest expected value (EV), in units of the initial bet. The
         engine runs in Python on the server.

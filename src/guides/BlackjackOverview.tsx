@@ -74,13 +74,12 @@ function Content() {
         </li>
       </GuideUl>
       <GuideH2 id="how-a-round-plays">How a Round Plays</GuideH2>
-      <GuideP>
         <GuideOl>
           <li>
             Everyone bets.
           </li>
           <li>
-            Every player gets dealt two cards, then the dealer is dealt two cards. One of the dealer cards is dealt face up. The facedown card is called the "hole card."
+            Cards are dealt one at a time from the dealer's left: one to each player, one face up to the dealer, then a second to each player and a second face down to the dealer. The facedown card is called the "hole card."
           </li>
           <li>
             If the dealer has an ace showing, he will offer a side bet called "insurance." This side wager pays 2 to 1 if the dealer's hole card is any 10-point card. Insurance wagers are optional and may not exceed half the original wager.
@@ -124,7 +123,7 @@ function Content() {
             Winning wagers pay even money, except a winning player blackjack usually pays 3 to 2.
           </li>
         </GuideOl>
-      </GuideP>
+      
       
 
       <GuideH2 id="the-house-edge">The House Edge</GuideH2>
@@ -147,7 +146,7 @@ function Content() {
               <tr key={row.ruleset} className="border-b border-white/10">
                 <td className="p-3 font-medium text-[var(--text-primary)]">{row.ruleset}</td>
                 <td className="p-3 text-[var(--text-muted)]">{row.rules}</td>
-                <td className="p-3 font-medium text-[var(--accent-soft)]">{row.edge}</td>
+                <td className="p-3 font-medium text-[var(--text-primary)] tabular-nums">{row.edge}</td>
               </tr>
             ))}
           </tbody>

@@ -23,6 +23,7 @@ import {
 } from '../state/simulatorLogic';
 import { DealtCard, PlayingCard } from '../components/PlayingCard';
 import { useDealReveal } from '../state/useDealReveal';
+import { Toggle } from '../components/RuleControls';
 import { ReferencePanel } from '../components/ReferencePanel';
 import { ProfitTracker } from '../components/ProfitTracker';
 import { countDisplay, getCountingSystem } from '../engine/countingSystems';
@@ -196,8 +197,8 @@ function Stat({
         interactive ? 'cursor-pointer transition-colors hover:bg-white/[0.05]' : ''
       } ${disabled ? 'opacity-50' : ''}`}
     >
-      <p className="text-[11px] tracking-wide text-[var(--text-muted)] uppercase">{label}</p>
-      <div className="font-mono text-[15px] font-semibold tabular-nums">{children}</div>
+      <p className="text-caption text-[var(--text-muted)]">{label}</p>
+      <div className="tabular-nums text-[15px] font-semibold">{children}</div>
     </div>
   );
 }
@@ -245,7 +246,7 @@ function BalanceStat({
 }
 
 const STEP_BTN =
-  'flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-sm transition-colors hover:bg-white/20 disabled:opacity-40';
+  'flex h-7 w-8 items-center justify-center rounded-[7px] bg-[var(--fill)] text-[17px] leading-none transition-colors active:bg-white/25 disabled:opacity-40';
 
 function PlayersStat({
   count,
@@ -342,7 +343,7 @@ function ValuePill({ cards, hideHole }: { cards: Rank[]; hideHole?: boolean }) {
   const bust = total > 21;
   return (
     <span
-      className={`rounded-full px-2.5 py-0.5 font-mono text-xs font-semibold tabular-nums ${
+      className={`rounded-full px-2.5 py-0.5 tabular-nums text-xs font-semibold ${
         bust ? 'bg-rose-500/90 text-white' : 'bg-black/50 text-white ring-1 ring-white/15'
       }`}
     >
@@ -479,7 +480,7 @@ function ShoeView({ count, full, cut }: { count: number; full: number; cut: numb
         <line x1="30" y1="24" x2="150" y2="24" stroke="rgb(255 255 255 / 0.35)" strokeWidth="0.8" />
       </svg>
       </div>
-      <span className="font-mono text-xs text-white/45 tabular-nums">Shoe {count}</span>
+      <span className="tabular-nums text-xs text-white/45">Shoe {count}</span>
     </div>
   );
 }
@@ -560,7 +561,7 @@ function DiscardTray({ count, full, decks }: { count: number; full: number; deck
         })}
       </svg>
       </div>
-      <span className="font-mono text-xs text-white/45 tabular-nums">Discards {count}</span>
+      <span className="tabular-nums text-xs text-white/45">Discards {count}</span>
     </div>
   );
 }
@@ -639,7 +640,7 @@ function PlayerHand({
           <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${outcome[1]}`}>{outcome[0]}</span>
         )}
       </div>
-      <span className="rounded-full border border-dashed border-white/25 px-2.5 py-0.5 font-mono text-[11px] text-[var(--text-muted)]">
+      <span className="rounded-full border border-dashed border-white/25 px-2.5 py-0.5 tabular-nums text-[11px] text-[var(--text-muted)]">
         {formatMoney(hand.bet)}
       </span>
     </div>
@@ -677,7 +678,7 @@ function NpcSeat({
               ))}
             </div>
             <span
-              className={`font-mono text-[10px] ${surrendered || total > 21 ? 'text-rose-400' : 'text-white/60'}`}
+              className={`tabular-nums text-[10px] ${surrendered || total > 21 ? 'text-rose-400' : 'text-white/60'}`}
             >
               {surrendered ? 'Surr' : total > 21 ? 'Bust' : total}
             </span>
@@ -924,7 +925,7 @@ export function SimulatorPage() {
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-3 py-6 sm:px-4 sm:py-8">
       {/* Table controls */}
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[var(--line)] bg-[var(--bg-second)] p-1.5">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-[12px] bg-[var(--bg-second)] p-1.5">
         <div className="flex w-full flex-wrap sm:w-auto">
           <div className="grid w-full grid-cols-2 sm:flex sm:w-auto">
             <BalanceStat balance={state.balance} disabled={playerTurn} dispatch={dispatch} />
@@ -951,27 +952,22 @@ export function SimulatorPage() {
           </div>
         </div>
         <div className="flex w-full items-center justify-end gap-1.5 border-t border-[var(--line)] pt-1.5 pr-1 sm:w-auto sm:border-0 sm:pt-0">
-          <button
-            type="button"
-            role="switch"
-            aria-checked={realisticMode}
-            onClick={() => {
-              setRealisticMode((m) => !m);
-              setHeat(0);
-            }}
-            className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
-              realisticMode
-                ? 'bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] text-[var(--accent-soft)]'
-                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-            }`}
-          >
+          <label className="flex min-h-11 items-center gap-2 px-2 text-[15px]">
             Realistic
-          </button>
+            <Toggle
+              label="Realistic mode"
+              checked={realisticMode}
+              onChange={(v) => {
+                setRealisticMode(v);
+                setHeat(0);
+              }}
+            />
+          </label>
           <button
             type="button"
             onClick={() => setReferenceOpen((o) => !o)}
             aria-expanded={referenceOpen}
-            className="rounded-md border border-[var(--line)] px-3 py-1.5 text-sm hover:border-white/20"
+            className="min-h-11 px-3 text-[15px] text-[var(--accent)] active:opacity-50"
           >
             Reference
           </button>
@@ -1050,7 +1046,7 @@ export function SimulatorPage() {
             {state.hands.length === 0 ? (
               <div className="flex flex-col items-center gap-2 pb-1">
                 <div className="h-[5.5rem] w-[3.9rem] rounded-lg border border-dashed border-white/15 sm:h-28 sm:w-20" />
-                <span className="rounded-full border border-dashed border-white/25 px-2.5 py-0.5 font-mono text-[11px] text-[var(--text-muted)]">
+                <span className="rounded-full border border-dashed border-white/25 px-2.5 py-0.5 tabular-nums text-[11px] text-[var(--text-muted)]">
                   {formatMoney(state.currentBet)}
                 </span>
               </div>
@@ -1096,7 +1092,7 @@ export function SimulatorPage() {
             {playerTurn ? (settled && evaluation ? ACTION_LABELS[evaluation.best] : '…') : '—'}
           </span>
         </button>
-        <span className="font-mono text-xs text-[var(--text-muted)]">{countLine}</span>
+        <span className="tabular-nums text-xs text-[var(--text-muted)]">{countLine}</span>
       </div>
 
       {/* Actions */}
@@ -1108,14 +1104,14 @@ export function SimulatorPage() {
               type="button"
               disabled={!isAvailable(action)}
               onClick={() => handleAction(action)}
-              className={`group flex min-w-[5.5rem] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium transition-all active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30 ${
+              className={`group flex min-h-11 min-w-[5.5rem] items-center justify-center gap-2 rounded-xl px-4 text-[17px] font-semibold transition-all active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30 ${
                 action === 'hit' || action === 'stand'
-                  ? 'bg-[var(--accent-strong)] text-white hover:bg-[var(--accent)]'
-                  : 'border border-[var(--line)] bg-[var(--bg-second)] hover:border-white/20'
+                  ? 'bg-[var(--accent)] text-white hover:brightness-110'
+                  : 'bg-[var(--fill)] text-[var(--accent)] hover:brightness-125'
               }`}
             >
               {ACTION_LABELS[action]}
-              <kbd className="hidden rounded border border-white/20 px-1 font-mono text-[10px] opacity-60 sm:inline">
+              <kbd className="hidden rounded border border-white/20 px-1 tabular-nums text-[10px] opacity-60 sm:inline">
                 {ACTION_KEY_LABEL[action]}
               </kbd>
             </button>
@@ -1125,10 +1121,10 @@ export function SimulatorPage() {
             type="button"
             disabled={!canDeal}
             onClick={handleDeal}
-            className="flex min-w-[12rem] items-center justify-center gap-2 rounded-xl bg-[var(--accent-strong)] px-6 py-3 font-medium text-white transition-all hover:bg-[var(--accent)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex min-h-[50px] min-w-[14rem] items-center justify-center gap-2 rounded-[14px] bg-[var(--accent)] px-6 text-[17px] font-semibold text-white transition-all hover:brightness-110 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {state.phase === 'round-over' ? 'Deal next hand' : 'Deal'}
-            <kbd className="hidden rounded border border-white/25 px-1 font-mono text-[10px] opacity-70 sm:inline">
+            <kbd className="hidden rounded border border-white/25 px-1 tabular-nums text-[10px] opacity-70 sm:inline">
               Space
             </kbd>
           </button>
@@ -1140,14 +1136,14 @@ export function SimulatorPage() {
 
       {/* Realistic mode */}
       {realisticMode && (
-        <section className="mt-6 rounded-xl border border-[var(--line)] bg-[var(--bg-second)] p-4">
+        <section className="mt-6 rounded-[12px] bg-[var(--bg-second)] p-4">
           <div className="mb-4 flex flex-wrap items-center gap-x-6 gap-y-2">
             {playerTurn ? (
               <Meter
                 label="Decision"
                 pct={decisionSeconds > 0 ? Math.min(100, (decisionRemaining / decisionSeconds) * 100) : 0}
                 color={decisionRemaining <= 0 ? 'bg-rose-500' : 'bg-[var(--accent)]'}
-                trailing={<span className="w-10 font-mono text-xs tabular-nums">{decisionRemaining.toFixed(1)}s</span>}
+                trailing={<span className="w-10 tabular-nums text-xs">{decisionRemaining.toFixed(1)}s</span>}
               />
             ) : (
               canDeal &&
@@ -1161,7 +1157,7 @@ export function SimulatorPage() {
               color={heat < 40 ? 'bg-emerald-500' : heat < 75 ? 'bg-amber-400' : 'bg-rose-500'}
             />
           </div>
-          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-[var(--line)] sm:grid-cols-5">
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[10px] bg-[var(--line)] sm:grid-cols-5">
             {[
               ['Avg decision', formatSeconds(pacing.decisionTotal, pacing.decisionCount)],
               ['Slow decisions', pacing.decisionCount > 0 ? String(pacing.slowDecisions) : '—'],
@@ -1177,8 +1173,8 @@ export function SimulatorPage() {
               ],
             ].map(([label, value]) => (
               <div key={label} className="bg-[var(--bg-second)] p-3">
-                <dt className="text-[11px] tracking-wide text-[var(--text-muted)] uppercase">{label}</dt>
-                <dd className="mt-0.5 font-mono text-lg font-semibold tabular-nums">{value}</dd>
+                <dt className="text-caption text-[var(--text-muted)]">{label}</dt>
+                <dd className="mt-0.5 tabular-nums text-lg font-semibold">{value}</dd>
               </div>
             ))}
           </dl>

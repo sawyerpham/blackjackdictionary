@@ -13,6 +13,7 @@ const PRESET_KEYS: (keyof GameSettings)[] = [
   'maxSplits', 'allowResplitAces', 'allowDrawAfterSplitAces', 'allowDoubleDown', 'doubleDownRestriction',
 ];
 
+/** iOS switch: 51 x 31 track, 27 pt knob. */
 export function Toggle({
   checked,
   onChange,
@@ -32,12 +33,12 @@ export function Toggle({
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-40 ${
-        checked ? 'bg-[var(--accent)]' : 'bg-white/15'
+      className={`relative h-[31px] w-[51px] shrink-0 rounded-full transition-colors duration-200 disabled:opacity-40 ${
+        checked ? 'bg-[var(--accent)]' : 'bg-[rgb(120_120_128/0.32)]'
       }`}
     >
       <span
-        className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+        className={`absolute top-[2px] left-[2px] h-[27px] w-[27px] rounded-full bg-white shadow-[0_3px_8px_rgb(0_0_0/0.15),0_3px_1px_rgb(0_0_0/0.06)] transition-transform duration-200 ease-[cubic-bezier(0.3,1.4,0.5,1)] ${
           checked ? 'translate-x-5' : ''
         }`}
       />
@@ -45,6 +46,7 @@ export function Toggle({
   );
 }
 
+/** iOS segmented control: gray track, raised thumb on the selected segment. */
 export function Segmented<T extends string | number>({
   value,
   options,
@@ -62,7 +64,7 @@ export function Segmented<T extends string | number>({
     <div
       role="radiogroup"
       aria-label={label}
-      className={`inline-flex flex-wrap rounded-lg bg-white/[0.06] p-0.5 ${disabled ? 'opacity-40' : ''}`}
+      className={`inline-flex flex-wrap rounded-[9px] bg-[var(--fill)] p-[2px] ${disabled ? 'opacity-40' : ''}`}
     >
       {options.map((o) => (
         <button
@@ -72,10 +74,10 @@ export function Segmented<T extends string | number>({
           aria-checked={value === o.value}
           disabled={disabled}
           onClick={() => onChange(o.value)}
-          className={`rounded-md px-2.5 py-1 text-sm transition-colors ${
+          className={`min-h-7 min-w-8 rounded-[7px] px-2 text-[13px] font-medium transition-colors ${
             value === o.value
-              ? 'bg-[var(--bg-third)] text-[var(--text-primary)] shadow ring-1 ring-white/10'
-              : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+              ? 'bg-[#636366] text-white shadow-[0_3px_8px_rgb(0_0_0/0.12),0_3px_1px_rgb(0_0_0/0.04)]'
+              : 'text-[var(--text-primary)] hover:bg-white/[0.06]'
           }`}
         >
           {o.label}
@@ -85,14 +87,22 @@ export function Segmented<T extends string | number>({
   );
 }
 
+/** Small header above a grouped list (iOS inset grouped style). */
+export function SectionHeader({ children }: { children: ReactNode }) {
+  return <h2 className="text-footnote mb-1.5 px-4 text-[var(--text-muted)] uppercase">{children}</h2>;
+}
+
+/** One row of a grouped list: 44 pt minimum, separator inset from the left like iOS. */
 export function Row({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-3">
-      <div className="min-w-0 flex-1 basis-48">
-        <p className="text-sm text-[var(--text-primary)]">{title}</p>
-        {hint && <p className="mt-0.5 text-xs text-[var(--text-muted)]">{hint}</p>}
+    <div className="pl-4 [&+&>div]:border-t [&+&>div]:border-[var(--line)]">
+      <div className="flex min-h-11 flex-wrap items-center justify-between gap-x-6 gap-y-2 py-2.5 pr-4">
+        <div className="min-w-0 flex-1 basis-48">
+          <p className="text-[17px] leading-snug text-[var(--text-primary)]">{title}</p>
+          {hint && <p className="text-footnote mt-0.5 text-[var(--text-muted)]">{hint}</p>}
+        </div>
+        {children}
       </div>
-      {children}
     </div>
   );
 }
@@ -100,39 +110,83 @@ export function Row({ title, hint, children }: { title: string; hint?: string; c
 export function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h3 className="mb-1 text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">{title}</h3>
-      <div className="divide-y divide-[var(--line)] rounded-xl border border-[var(--line)] bg-[var(--bg-second)] px-4">
-        {children}
-      </div>
+      <SectionHeader>{title}</SectionHeader>
+      <div className="overflow-hidden rounded-[10px] bg-[var(--bg-second)]">{children}</div>
     </section>
   );
 }
 
-export function PresetPicker({ compact = false }: { compact?: boolean }) {
+/** iOS selection list: one row per choice, a checkmark on the selected one. */
+export function ChoiceList({
+  items,
+}: {
+  items: { key: string; label: string; description?: string; active: boolean; onSelect: () => void }[];
+}) {
+  return (
+    <div className="overflow-hidden rounded-[10px] bg-[var(--bg-second)]">
+      {items.map((it) => (
+        <button
+          key={it.key}
+          type="button"
+          onClick={it.onSelect}
+          aria-pressed={it.active}
+          className="block w-full pl-4 text-left transition-colors active:bg-white/[0.08] [&+&>span]:border-t [&+&>span]:border-[var(--line)]"
+        >
+          <span className="flex min-h-11 items-center gap-3 py-2.5 pr-4">
+            <span className="min-w-0 flex-1">
+              <span className="block text-[17px] leading-snug">{it.label}</span>
+              {it.description && (
+                <span className="text-footnote block text-[var(--text-muted)]">{it.description}</span>
+              )}
+            </span>
+            <svg
+              viewBox="0 0 16 16"
+              className={`h-4 w-4 shrink-0 text-[var(--accent)] ${it.active ? '' : 'invisible'}`}
+              aria-hidden
+            >
+              <path
+                d="M2.5 8.5l3.5 3.5 7.5-8"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Casino presets; the one matching the current rules is checked. */
+export function PresetPicker() {
   const settings = useSettingsStore((s) => s.settings);
   const update = useSettingsStore((s) => s.update);
   return (
-    <div className={`grid gap-2 ${compact ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-3'}`}>
-      {PRESETS.map((p) => {
-        const active = PRESET_KEYS.every((k) => settings[k] === p.settings[k]);
-        return (
-          <button
-            key={p.key}
-            type="button"
-            onClick={() => update(Object.fromEntries(PRESET_KEYS.map((k) => [k, p.settings[k]])))}
-            aria-pressed={active}
-            className={`rounded-xl border p-4 text-left transition-colors ${
-              active
-                ? 'border-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]'
-                : 'border-[var(--line)] bg-[var(--bg-second)] hover:border-white/20'
-            }`}
-          >
-            <p className="font-medium">{p.label}</p>
-            <p className="mt-0.5 text-xs text-[var(--text-muted)]">{p.description}</p>
-          </button>
-        );
-      })}
-    </div>
+    <ChoiceList
+      items={PRESETS.map((p) => ({
+        key: p.key,
+        label: p.label,
+        description: p.description,
+        active: PRESET_KEYS.every((k) => settings[k] === p.settings[k]),
+        onSelect: () => update(Object.fromEntries(PRESET_KEYS.map((k) => [k, p.settings[k]]))),
+      }))}
+    />
+  );
+}
+
+/** Full-width text button styled as a grouped-list row (e.g. "Reset Rules"). */
+export function ActionRow({ children, onClick }: { children: ReactNode; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="min-h-11 w-full rounded-[10px] bg-[var(--bg-second)] px-4 text-[17px] text-[var(--accent)] transition-colors active:bg-white/[0.08]"
+    >
+      {children}
+    </button>
   );
 }
 
@@ -146,7 +200,7 @@ export function RuleGroups() {
       update({ [key]: value } as Partial<GameSettings>);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <Group title="Table">
         <Row title="Decks">
           <Segmented

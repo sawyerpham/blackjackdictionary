@@ -55,7 +55,7 @@ function PanelHeading({ to, children }: { to: string; children: React.ReactNode 
 }
 
 function PanelSubheading({ children }: { children: React.ReactNode }) {
-  return <h4 className="mb-2 mt-4 text-sm font-semibold text-[var(--accent-soft)]">{children}</h4>;
+  return <h4 className="mb-2 mt-4 text-[15px] font-semibold text-[var(--text-primary)]">{children}</h4>;
 }
 
 export function ReferencePanel({

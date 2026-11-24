@@ -8,24 +8,23 @@ const LINKS = [
   { to: '/about', label: 'About' },
 ];
 
+// Apple-style bar: translucent material, label vs secondary-label for the current page, 44 pt targets.
 const linkClass = ({ isActive }: { isActive: boolean }) =>
-  `rounded-md px-3 py-1.5 text-sm transition-colors ${
-    isActive
-      ? 'bg-white/[0.08] text-[var(--text-primary)]'
-      : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+  `flex min-h-11 items-center px-2.5 text-[15px] transition-colors ${
+    isActive ? 'font-semibold text-[var(--text-primary)]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
   }`;
 
 export function NavBar() {
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[var(--bg-main)]/80 backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 py-3 sm:flex-row sm:justify-between">
-        <NavLink to="/" className="flex items-center gap-2 text-[15px] font-semibold tracking-tight">
-          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[var(--accent)] text-xs text-white">
+    <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[rgb(22_22_24/0.72)] backdrop-blur-xl backdrop-saturate-150">
+      <nav className="mx-auto flex max-w-6xl flex-col items-center px-4 sm:flex-row sm:justify-between">
+        <NavLink to="/" className="text-headline flex min-h-11 items-center gap-2">
+          <span className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-[var(--accent)] text-sm text-white">
             ♠
           </span>
           Blackjack Dictionary
         </NavLink>
-        <div className="flex flex-wrap justify-center gap-1">
+        <div className="flex flex-wrap justify-center">
           {LINKS.map((l) => (
             <NavLink key={l.to} to={l.to} className={linkClass}>
               {l.label}
